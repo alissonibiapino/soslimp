@@ -1,4 +1,6 @@
 import customtkinter as ctk
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PIL import Image
 
 # Outras views
@@ -11,6 +13,12 @@ from theme import colors
 class Coluna1(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent, fg_color=colors.BRANCO)
+
+        # Tipos de transação
+        transacoes = ['Dinheiro', 'Crédito', 'Débito', 'Pix']
+
+        # Fazer lógica para puxar os colaboradores do banco depois!!!
+        colaboradores = ['Alisson', 'Daniel', 'José']
         
         # Configuração das linhas da colunas e das linhas
         self.grid_columnconfigure(0, weight=1)
@@ -52,6 +60,30 @@ class Coluna1(ctk.CTkFrame):
         linha2.grid_columnconfigure(0, weight=1)
         linha2.grid_rowconfigure(0, weight=1)
 
+        label_linha2_valor = ctk.CTkLabel (
+            linha2,
+            text="Nova entrada de valor:"
+        )
+        label_linha2_valor.grid(row=0, column=0, pady=10, padx=10)
+        
+        form_valor = ctk.CTkEntry (
+            linha2,
+            placeholder_text="R$ 00,00"
+        )
+        form_valor.grid(row=1, column=0, pady=10, padx=10, sticky='nsew')
+
+        select_tipo_transacao = ctk.CTkOptionMenu (
+            linha2,
+            values=transacoes
+        )
+        select_tipo_transacao.grid(row=1, column=1, pady=10, padx=10, sticky='nsew')
+
+        select_colaborador = ctk.CTkOptionMenu (
+            linha2,
+            values=colaboradores
+        )
+        select_colaborador.grid(row=1, column=2, pady=10, padx=10, sticky='nsew')
+
         # Linha 3
         linha3 = ctk.CTkFrame(
             self,
@@ -64,14 +96,33 @@ class Coluna1(ctk.CTkFrame):
         linha3.grid_columnconfigure(0, weight=1)
         linha3.grid_rowconfigure(0, weight=1)
 
+        label_linha3_valor_caixa = ctk.CTkLabel (
+            linha3,
+            text="TROCO DISPONÍVEL EM CAIXA: "
+        )
+        label_linha3_valor_caixa.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
+
         # Linha 4
-        linha3 = ctk.CTkFrame(
+        linha4 = ctk.CTkFrame(
             self,
             fg_color=colors.BRANCO,
             corner_radius=10,
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
         
-        linha3.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
-        linha3.grid_columnconfigure(0, weight=1)
-        linha3.grid_rowconfigure(0, weight=1)
+        linha4.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
+        linha4.grid_columnconfigure(0, weight=1)
+        linha4.grid_rowconfigure(0, weight=1)
+
+        fig, ax = plt.subplots(figsize=(1, 3))
+
+        horarios = ['08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h']
+        counts = [12, 21, 55, 40, 65, 12, 30, 78, 51, 31, 13]
+        bar_labels = ['08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h']
+        bar_colors = [colors.AZUL_PRIMARIO, colors.AZUL_SECUNDARIO]
+
+        ax.bar(horarios, counts, label=bar_labels, color=bar_colors)
+
+        canvas = FigureCanvasTkAgg(fig, master=linha4)
+        canvas_widget = canvas.get_tk_widget()
+        canvas_widget.pack(side="top", fill="both", expand=True)

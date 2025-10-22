@@ -28,13 +28,13 @@ class App(ctk.CTk):
 
         # Jogando as views no App
         col1 = Coluna1(self)
-        col1.grid(row=0, column=0, padx=40, pady=10, sticky="nsew")
+        col1.grid(row=0, column=0, padx=25, pady=10, sticky="nsew")
 
         col2 = Coluna2(self)
-        col2.grid(row=0, column=1, padx=40, pady=10, sticky="nsew")
+        col2.grid(row=0, column=1, padx=25, pady=10, sticky="nsew")
 
         col2 = Coluna2(self)
-        col2.grid(row=0, column=2, padx=40, pady=10, sticky="nsew")
+        col2.grid(row=0, column=2, padx=25, pady=10, sticky="nsew")
         
         # Iniciar o app
         self.mainloop()
