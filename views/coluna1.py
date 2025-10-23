@@ -125,4 +125,4 @@ class Coluna1(ctk.CTkFrame):
 
         canvas = FigureCanvasTkAgg(fig, master=linha4)
         canvas_widget = canvas.get_tk_widget()
-        canvas_widget.pack(side="top", fill="both", expand=True)
+        canvas_widget.pack(side="top", fill="both", expand=False, padx=10, pady=10)

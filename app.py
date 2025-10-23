@@ -33,8 +33,8 @@ class App(ctk.CTk):
         col2 = Coluna2(self)
         col2.grid(row=0, column=1, padx=25, pady=10, sticky="nsew")
 
-        col2 = Coluna2(self)
-        col2.grid(row=0, column=2, padx=25, pady=10, sticky="nsew")
+        col3 = Coluna3(self)
+        col3.grid(row=0, column=2, padx=25, pady=10, sticky="nsew")
         
         # Iniciar o app
         self.mainloop()
