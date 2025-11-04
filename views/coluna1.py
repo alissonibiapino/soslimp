@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PIL import Image
 
+from views.transaction import Transaction
+
 # Outras views
 
 # Cores
@@ -11,8 +13,9 @@ from theme import colors
 # from theme import colors
 
 class Coluna1(ctk.CTkFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, controller):
         super().__init__(parent, fg_color=colors.BRANCO)
+        self.controller = controller
 
         # Tipos de transação
         transacoes = ['Dinheiro', 'Crédito', 'Débito', 'Pix']
@@ -47,6 +50,9 @@ class Coluna1(ctk.CTkFrame):
         )
         logo_label = ctk.CTkLabel(linha1, text="", image=logo)
         logo_label.grid(row=0, column=0, pady=15, sticky="n")
+
+        buttonTest = ctk.CTkButton(linha1, text="Ir para outra aba", command=self.go_to_transaction)
+        buttonTest.grid(row=0, column=0, pady=15, sticky="n")
 
         # Linha 2
         linha2 = ctk.CTkFrame(
@@ -126,3 +132,6 @@ class Coluna1(ctk.CTkFrame):
         canvas = FigureCanvasTkAgg(fig, master=linha4)
         canvas_widget = canvas.get_tk_widget()
         canvas_widget.pack(side="top", fill="both", expand=False, padx=10, pady=10)
+
+    def go_to_transaction(self):
+        self.controller.show_frame(Transaction)
