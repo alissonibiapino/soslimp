@@ -1,11 +1,15 @@
 import customtkinter as ctk
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 from PIL import Image
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from views.transaction import Transaction
+from database.queries import get_morador
 
-# Outras views
+moradores = get_morador()
+
+moradores_dict = {nome_pessoa: cod_pessoa for cod_pessoa, nome_pessoa in moradores}
+nomes_moradores = list(moradores_dict.keys())
 
 # Cores
 from theme import colors
@@ -25,6 +29,8 @@ class Coluna1(ctk.CTkFrame):
         
         # Configuração das linhas da colunas e das linhas
         self.grid_columnconfigure(0, weight=1)
+
+        morador_selecionado = ctk.StringVar(value="Selecione")
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -51,7 +57,7 @@ class Coluna1(ctk.CTkFrame):
         logo_label = ctk.CTkLabel(linha1, text="", image=logo)
         logo_label.grid(row=0, column=0, pady=15, sticky="n")
 
-        buttonTest = ctk.CTkButton(linha1, text="Ir para outra aba", command=self.go_to_transaction)
+        buttonTest = ctk.CTkButton(linha1, text="Ir para outra aba", command=self.controller.show_transaction)
         buttonTest.grid(row=0, column=0, pady=15, sticky="n")
 
         # Linha 2
@@ -86,7 +92,8 @@ class Coluna1(ctk.CTkFrame):
 
         select_colaborador = ctk.CTkOptionMenu (
             linha2,
-            values=colaboradores
+            values=nomes_moradores,
+            variable=morador_selecionado
         )
         select_colaborador.grid(row=1, column=2, pady=10, padx=10, sticky='nsew')
 
@@ -132,6 +139,3 @@ class Coluna1(ctk.CTkFrame):
         canvas = FigureCanvasTkAgg(fig, master=linha4)
         canvas_widget = canvas.get_tk_widget()
         canvas_widget.pack(side="top", fill="both", expand=False, padx=10, pady=10)
-
-    def go_to_transaction(self):
-        self.controller.show_frame(Transaction)

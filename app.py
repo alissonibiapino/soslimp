@@ -13,24 +13,36 @@ class App(ctk.CTk):
         ctk.set_appearance_mode("light")
         self.title("SOSLimp")
         self.geometry("1280x720")
-        # self.minsize("1280x720")
 
-        self.container = ctk.CTkFrame(self)
-        self.container.pack(fill="both", expand=True)
+        # Inicia o app sem nada, depois inicia e chama a home
+        self.current_frame = None
+        self.show_home()
+        # self.current_frame = Home(self)
+        # self.current_frame.pack(fill="both", expand=True)
 
-        self.frames = {}
+        # self.frames = {}
 
-        for screen in (Home, Transaction):
-            frame = screen(self.container, self)
-            self.frames[screen] = frame
-            frame.grid(row=0, column=0, sticky="nsew")
+        # for screen in (Home, Transaction):
+        #     frame = screen(self.container, self)
+        #     self.frames[screen] = frame
+        #     frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame(Home)
+        # self.show_frame(Home)
         
-        self.mainloop()
+        # self.mainloop()
 
-    def show_frame(self, screen):
-        frame = self.frames[screen]
-        frame.tkraise()
+    def show_home(self):
+        if self.current_frame:
+            self.current_frame.destroy()
+        self.current_frame = Home(self)
+        self.current_frame.pack(fill="both", expand=True)
 
-App()
+    def show_transaction(self):
+        if self.current_frame:
+            self.current_frame.destroy()
+        self.current_frame = Transaction(self)
+        self.current_frame.pack(fill="both", expand=True)
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()

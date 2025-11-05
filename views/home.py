@@ -10,9 +10,8 @@ from views.coluna3 import Coluna3
 from theme import colors
 
 class Home(ctk.CTkFrame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, fg_color=colors.BRANCO)
-        self.controller = controller
+    def __init__(self, master):
+        super().__init__(master, fg_color=colors.BRANCO)
         
         # Configuração do layout
         self.grid_columnconfigure(0, weight=3)
@@ -22,7 +21,7 @@ class Home(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
 
         # Jogando as views no App
-        col1 = Coluna1(self, controller)
+        col1 = Coluna1(self, master)
         col1.grid(row=0, column=0, padx=25, pady=10, sticky="nsew")
 
         col2 = Coluna2(self)
