@@ -35,7 +35,7 @@ def get_produtos():
 def get_ultimas_vendas():
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT id_reg_venda, forma_pagamento.tipo_pagamento, data_reg_venda, preco_unitario FROM registro_venda INNER JOIN forma_pagamento ON( registro_venda.cod_forma_pag = forma_pagamento.cod_forma_pag) WHERE data_reg_venda >= current_date - INTERVAL '7 days';")
+    cur.execute("SELECT id_reg_venda, INITCAP(forma_pagamento.tipo_pagamento), data_reg_venda, preco_unitario FROM registro_venda INNER JOIN forma_pagamento ON( registro_venda.cod_forma_pag = forma_pagamento.cod_forma_pag) WHERE data_reg_venda >= current_date - INTERVAL '7 days';")
     resultado = cur.fetchall()
     conn.close()
 

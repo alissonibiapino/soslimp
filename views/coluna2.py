@@ -9,7 +9,7 @@ from theme import colors
 
 class Coluna2(ctk.CTkFrame):
     def __init__(self, parent):
-        super().__init__(parent, fg_color=colors.BRANCO)
+        super().__init__(parent)
         
         self.grid_columnconfigure(0, weight=1)
 

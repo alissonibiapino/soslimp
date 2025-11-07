@@ -6,12 +6,9 @@ from views.coluna1 import Coluna1
 from views.coluna2 import Coluna2
 from views.coluna3 import Coluna3
 
-# Cores
-from theme import colors
-
 class Home(ctk.CTkFrame):
     def __init__(self, master):
-        super().__init__(master, fg_color=colors.BRANCO)
+        super().__init__(master)
         
         # Configuração do layout
         self.grid_columnconfigure(0, weight=3)

@@ -11,6 +11,7 @@ class App(ctk.CTk):
 
         # Configuração inicial do App
         ctk.set_appearance_mode("light")
+        ctk.set_default_color_theme("soslimp-theme.json")
         self.title("SOSLimp")
         self.geometry("1280x720")
 
