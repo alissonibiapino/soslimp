@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from database.queries import get_morador
+from database.queries import get_colaboradores
 
-moradores = get_morador()
+colaboradores = get_colaboradores()
 
-moradores_dict = {nome_pessoa: cod_pessoa for cod_pessoa, nome_pessoa in moradores}
-nomes_moradores = list(moradores_dict.keys())
+colaboradores_dict = {nome_pessoa: cod_pessoa for cod_pessoa, nome_pessoa in colaboradores}
+nomes_colaboradores = list(colaboradores_dict.keys())
 
 # Cores
 from theme import colors
@@ -30,7 +30,7 @@ class Coluna1(ctk.CTkFrame):
         # Configuração das linhas da colunas e das linhas
         self.grid_columnconfigure(0, weight=1)
 
-        morador_selecionado = ctk.StringVar(value="Selecione")
+        colaborador_selecionado = ctk.StringVar(value="Selecione")
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -92,8 +92,8 @@ class Coluna1(ctk.CTkFrame):
 
         select_colaborador = ctk.CTkOptionMenu (
             linha2,
-            values=nomes_moradores,
-            variable=morador_selecionado
+            values=nomes_colaboradores,
+            variable=colaborador_selecionado
         )
         select_colaborador.grid(row=1, column=2, pady=10, padx=10, sticky='nsew')
 
