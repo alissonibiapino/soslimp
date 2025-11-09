@@ -8,6 +8,8 @@ from database.queries import get_colaboradores
 
 colaboradores = get_colaboradores()
 
+from theme import colors
+
 colaboradores_dict = {nome_pessoa: cod_pessoa for cod_pessoa, nome_pessoa in colaboradores}
 nomes_colaboradores = list(colaboradores_dict.keys())
 
@@ -23,9 +25,6 @@ class Coluna1(ctk.CTkFrame):
 
         # Tipos de transação
         transacoes = ['Dinheiro', 'Crédito', 'Débito', 'Pix']
-
-        # Fazer lógica para puxar os colaboradores do banco depois!!!
-        colaboradores = ['Alisson', 'Daniel', 'José']
         
         # Configuração das linhas da colunas e das linhas
         self.grid_columnconfigure(0, weight=1)

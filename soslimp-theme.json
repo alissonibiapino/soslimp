@@ -9,8 +9,8 @@
     "corner_radius": 0,
     "border_width": 0,
     "fg_color": ["#FFFFFF", "#FFFFFF"],
-    "top_fg_color": ["gray81", "gray20"],
-    "border_color": ["gray65", "gray28"]
+    "top_fg_color": ["#FFFFFF", "#FFFFFF"],
+    "border_color": ["#FFFFFF", "#FFFFFF"]
   },
   "CTkButton": {
     "corner_radius": 6,
@@ -142,7 +142,7 @@
       "weight": "normal"
     },
     "Windows": {
-      "family": "Poppins",
+      "family": "Aptos",
       "size": 13,
       "weight": "normal"
     },

@@ -20,7 +20,6 @@ class Coluna2(ctk.CTkFrame):
         # Linha 1
         linha1 = ctk.CTkFrame(
             self,
-            fg_color=colors.BRANCO,
             corner_radius=10,
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
@@ -36,7 +35,6 @@ class Coluna2(ctk.CTkFrame):
         # Linha 2
         linha2 = ctk.CTkFrame(
             self,
-            fg_color=colors.BRANCO,
             corner_radius=10,
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
@@ -51,7 +49,6 @@ class Coluna2(ctk.CTkFrame):
         # Linha 3
         linha3 = ctk.CTkFrame(
             self,
-            fg_color=colors.BRANCO,
             corner_radius=10,
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
