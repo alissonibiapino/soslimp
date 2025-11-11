@@ -29,8 +29,8 @@ class Coluna3(ctk.CTkFrame):
         
         linha1.grid(row=0, column=0, sticky="nsew", padx=10, pady=5)
 
-        linha1.grid_rowconfigure(1, weight=1)  # linha do scroll ocupa o espaço vertical
-        linha1.grid_columnconfigure(0, weight=1)
+        # linha1.grid_rowconfigure(1, weight=1)  # linha do scroll ocupa o espaço vertical
+        # linha1.grid_columnconfigure(0, weight=1)
 
         ultimas_entradas_label = ctk.CTkLabel(linha1, text="ÚLTIMAS ENTRADAS", font=("Arial", 20))
         ultimas_entradas_label.grid(row=0, column=0, sticky="nsew", padx=20, pady=10)

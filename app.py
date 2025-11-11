@@ -4,6 +4,7 @@ from PIL import Image
 # Outras views
 from views.home import Home
 from views.transaction import Transaction
+from views.login import Login
 
 class App(ctk.CTk):
     def __init__(self):
@@ -17,7 +18,7 @@ class App(ctk.CTk):
 
         # Inicia o app sem nada, depois inicia e chama a home
         self.current_frame = None
-        self.show_home()
+        self.show_login()
         # self.current_frame = Home(self)
         # self.current_frame.pack(fill="both", expand=True)
 
@@ -31,6 +32,12 @@ class App(ctk.CTk):
         # self.show_frame(Home)
         
         # self.mainloop()
+    
+    def show_login(self):
+        if self.current_frame:
+            self.current_frame.destroy()
+        self.current_frame = Login(self)
+        self.current_frame.pack(fill="both", expand=True)
 
     def show_home(self):
         if self.current_frame:
