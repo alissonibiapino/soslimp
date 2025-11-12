@@ -84,11 +84,11 @@ class Coluna3(ctk.CTkFrame):
                 coluna_tipo_pagamento = ctk.CTkLabel(coluna_tipo_pagamento, text=f"{dados['forma_pagamento']}", width=60, anchor='w')
                 coluna_tipo_pagamento.grid(row=0, column=1, padx=6, pady=0)
 
-            if dados['forma_pagamento'] == 'Em espécie':
+            if dados['forma_pagamento'] == 'Dinheiro':
                 forma_de_pagamento_icon = ctk.CTkImage(
                     light_image = Image.open("assets/img/dinheiro.png"),
                     dark_image = Image.open("assets/img/dinheiro.png"),
-                    size=(12, 12)
+                    size=(8, 12)
                 )
                 forma_de_pagamento_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=forma_de_pagamento_icon)
                 forma_de_pagamento_label.grid(row=0, column=0, pady=0, sticky="n")

@@ -13,7 +13,20 @@ def get_colaboradores():
     return colaboradores
 
 
-# QUERIES DE PRODUTOS
+# QUERIES DE 
+
+def get_categorias():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM categoria")
+    resultado = cur.fetchall()
+
+    categorias_dict = {
+        cod_produto: categoria_produto for cod_produto, categoria_produto in resultado
+    }
+
+    print(categorias_dict)
+    conn.close()
 
 def get_produtos():
     conn = get_conn()
@@ -35,7 +48,7 @@ def get_produtos():
 def get_ultimas_vendas():
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT id_reg_venda, INITCAP(forma_pagamento.tipo_pagamento), data_reg_venda, preco_unitario FROM registro_venda INNER JOIN forma_pagamento ON( registro_venda.cod_forma_pag = forma_pagamento.cod_forma_pag) WHERE data_reg_venda >= current_date - INTERVAL '7 days';")
+    cur.execute("SELECT cod_venda, INITCAP(forma_pagamento.tipo_pagamento), hora_do_registro, valor_total FROM registro_pedido rp INNER JOIN forma_pagamento USING (cod_forma_pag) WHERE hora_do_registro >= current_date - INTERVAL '7 days';")
     resultado = cur.fetchall()
     conn.close()
 
@@ -46,3 +59,14 @@ def get_ultimas_vendas():
 
     return ultimas_vendas_dict
     
+# QUERIES DE TROCO
+
+def get_caixa_atual():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT ROUND(valor_atual, 2) FROM caixa;")
+    resultado = cur.fetchall()
+    conn.close()
+
+    print(resultado)
+    return resultado

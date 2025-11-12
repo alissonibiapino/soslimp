@@ -15,7 +15,7 @@
   "CTkButton": {
     "corner_radius": 6,
     "border_width": 0,
-    "fg_color": ["#3B8ED0", "#1F6AA5"],
+    "fg_color": ["#075F90", "#075F90"],
     "hover_color": ["#36719F", "#144870"],
     "border_color": ["#3E454A", "#949A9F"],
     "text_color": ["#DCE4EE", "#DCE4EE"],
@@ -84,10 +84,10 @@
   },
   "CTkOptionMenu": {
     "corner_radius": 6,
-    "fg_color": ["#3B8ED0", "#1F6AA5"],
-    "button_color": ["#36719F", "#144870"],
-    "button_hover_color": ["#27577D", "#203A4F"],
-    "text_color": ["#DCE4EE", "#DCE4EE"],
+    "fg_color": ["#FAFAFA", "#FAFAFA"],
+    "button_color": ["#379AFF", "#379AFF"],
+    "button_hover_color": ["#075F90", "#075F90"],
+    "text_color": ["#212121", "#212121"],
     "text_color_disabled": ["gray74", "gray60"]
   },
   "CTkComboBox": {
@@ -142,7 +142,7 @@
       "weight": "normal"
     },
     "Windows": {
-      "family": "Aptos",
+      "family": "Segoe UI",
       "size": 13,
       "weight": "normal"
     },
