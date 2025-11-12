@@ -4,16 +4,16 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from database.queries import get_colaboradores, get_caixa_atual, get_categorias
-# get_categorias()
-# colaboradores = get_colaboradores()
+from database.queries import get_colaboradores, get_caixa_atual, get_categorias, get_produtos_por_categoria
+
 caixa_atual = get_caixa_atual()
+categorias = get_categorias()
+
 
 from theme import colors, fonts
 
 # colaboradores_dict = {nome_pessoa: cod_pessoa for cod_pessoa, nome_pessoa in colaboradores}
 # nomes_colaboradores = list(colaboradores_dict.keys())
-
 
 class Coluna1(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -35,12 +35,25 @@ class Coluna1(ctk.CTkFrame):
         # Configuração das linhas da colunas e das linhas
         self.grid_columnconfigure(0, weight=1)
 
+        categoria_selecionada = ctk.StringVar(value="Categoria do produto")
         colaborador_selecionado = ctk.StringVar(value="Selecione")
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
         self.grid_rowconfigure(2, weight=1)
         self.grid_rowconfigure(3, weight=1)
+
+
+        def atualizar_produtos(categoria_nome):
+            id_categoria = categorias[categoria_nome]
+            print(f"Categoria selecionada: {categoria_nome} (ID: {id_categoria})")
+            atualizar_produtos_por_categoria(id_categoria)
+
+
+        def atualizar_produtos_por_categoria(id_categoria):
+            produtos = get_produtos_por_categoria(id_categoria)
+            select_produto.configure(values=list(produtos.keys()))
+            select_produto.configure(state="normal")
 
         # Linha 1
         linha1 = ctk.CTkFrame(
@@ -82,10 +95,11 @@ class Coluna1(ctk.CTkFrame):
         )
         label_linha2_valor.grid(row=0, column=0, pady=20, padx=20, sticky='nw')
 
-        select_categoria = ctk.CTkOptionMenu(linha2, values=["Categoria um", "Categoria dois"])
+                                                                                                # ESSE command ENVIA AUTOMATICAMENTE O VALOR SELECIONADO
+        select_categoria = ctk.CTkOptionMenu(linha2, values=list(categorias.keys()), variable=categoria_selecionada, command=atualizar_produtos)
         select_categoria.grid(row=1, column=0, padx=20, sticky='nsew')
 
-        select_produto = ctk.CTkOptionMenu(linha2, values=["Manga", "Mamão"])
+        select_produto = ctk.CTkOptionMenu(linha2, values=["Produto"], state="disabled")
         select_produto.grid(row=2, column=0, padx=20, pady=10, sticky='nsew')
 
         entrada_quantidade = ctk.CTkEntry (

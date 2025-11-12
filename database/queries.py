@@ -13,20 +13,21 @@ def get_colaboradores():
     return colaboradores
 
 
-# QUERIES DE 
+# QUERIES DE PRODUTOS
 
 def get_categorias():
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM categoria")
+    cur.execute("SELECT cod_categoria, categoria_produto FROM categoria")
     resultado = cur.fetchall()
 
     categorias_dict = {
-        cod_produto: categoria_produto for cod_produto, categoria_produto in resultado
+        linha[1]: linha[0] for linha in resultado
     }
 
     print(categorias_dict)
     conn.close()
+    return categorias_dict
 
 def get_produtos():
     conn = get_conn()
@@ -41,6 +42,21 @@ def get_produtos():
     }
     print(produtos_dict)
     return produtos_dict
+
+def get_produtos_por_categoria(categoria):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""SELECT cod_produto, nome_produto, descricao, marca, preco_unitario FROM produto WHERE cod_categoria = %s;""", (categoria,))
+    resultado = cur.fetchall()
+    conn.close()
+
+    produtos_dict = {
+        nome_produto: {"cod_produto":cod_produto, "descricao":descricao, "marca":marca, "preco":preco}
+        for cod_produto, descricao, nome_produto, marca, preco in resultado
+    }
+    print(produtos_dict)
+    return produtos_dict
+
 
 
 # QUERIES DE VENDAS
