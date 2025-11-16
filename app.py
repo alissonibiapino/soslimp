@@ -12,29 +12,15 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        # Configuração inicial do App
+        # Configuração visual
         ctk.set_appearance_mode("light")
-        ctk.set_default_color_theme("soslimp-theme.json")
+        ctk.set_default_color_theme("theme/soslimp-theme.json")
         self.title("SOSLimp")
         self.geometry("1280x720")
         fonts.iniciar_fontes()
 
-        # Inicia o app sem nada, depois inicia e chama a home
         self.current_frame = None
-        self.show_home()
-        # self.current_frame = Home(self)
-        # self.current_frame.pack(fill="both", expand=True)
-
-        # self.frames = {}
-
-        # for screen in (Home, Transaction):
-        #     frame = screen(self.container, self)
-        #     self.frames[screen] = frame
-        #     frame.grid(row=0, column=0, sticky="nsew")
-
-        # self.show_frame(Home)
-        
-        # self.mainloop()
+        self.show_login()
     
     def show_login(self):
         if self.current_frame:

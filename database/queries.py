@@ -1,4 +1,5 @@
 from database.conn import get_conn
+from sessao import SessaoDeLogin
 
 # QUERIES DE COLABORADOR
 
@@ -25,7 +26,7 @@ def get_categorias():
         linha[1]: linha[0] for linha in resultado
     }
 
-    print(categorias_dict)
+    # print(categorias_dict)
     conn.close()
     return categorias_dict
 
@@ -40,7 +41,7 @@ def get_produtos():
         nome_produto: {"id":id, "marca":marca, "preco":preco}
         for id, nome_produto, marca, preco in resultado
     }
-    print(produtos_dict)
+    # print(produtos_dict)
     return produtos_dict
 
 def get_produtos_por_categoria(categoria):
@@ -54,7 +55,7 @@ def get_produtos_por_categoria(categoria):
         nome_produto: {"cod_produto":cod_produto, "descricao":descricao, "marca":marca, "preco":preco}
         for cod_produto, descricao, nome_produto, marca, preco in resultado
     }
-    print(produtos_dict)
+    # print(produtos_dict)
     return produtos_dict
 
 
@@ -74,6 +75,28 @@ def get_ultimas_vendas():
     }
 
     return ultimas_vendas_dict
+
+def insert_registra_pedido(cod_loja, cod_colaborador, cod_forma_pag, valor_total, cod_produto, quantidade, preco_unitario):
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO registro_pedido (cod_loja, cod_colaborador, cod_forma_pag, valor_total, hora_do_registro) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP) RETURNING cod_venda", (cod_loja, cod_colaborador, cod_forma_pag, valor_total))
+        cod_pedido = cur.fetchone()[0]
+        cur.execute("INSERT INTO detalhes_pedido (cod_produto, quantidade, preco_unitario, cod_venda) VALUES (%s, %s, %s, %s)", (cod_produto, quantidade, preco_unitario, cod_pedido))
+        conn.commit()
+    except Exception as err:
+        print("Erro: ", err)
+        conn.rollback()
+    else:
+        print("Tudo certo!")
+    finally:
+        print("Fechando conexão")
+        conn.close()
+   
+
+# def insert_registra_pedido_detalhe (cod_produto, quantidade, preco_unitario, cod_venda):
+
+
     
 # QUERIES DE TROCO
 
@@ -84,5 +107,47 @@ def get_caixa_atual():
     resultado = cur.fetchall()
     conn.close()
 
-    print(resultado)
+    # print(resultado)
     return resultado
+
+
+# QUERIES DE LOJA
+
+def get_lojas():
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("SELECT cod_loja, nome_loja, tipo_loja FROM loja;")
+        resultado = cur.fetchall()
+        
+        lojas_dict = {
+            nome_loja: { "cod_loja":cod_loja, "tipo_loja":tipo_loja }
+            for cod_loja, nome_loja, tipo_loja in resultado
+        }
+
+        return lojas_dict
+
+    except Exception as err:
+        print("Erro:", err)
+    finally:
+        conn.close()
+
+
+def login(usuario, senha, loja):
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("SELECT	c.cod_colaborador, c.nome, c.cargo FROM colaborador_login INNER JOIN colaborador c USING (cod_colaborador) WHERE usuario = %s AND senha_hash = %s;", (usuario, senha))
+        resultado = cur.fetchall()
+
+        if resultado == []:
+            return False
+        else:
+            SessaoDeLogin.cod_colaborador = resultado[0][0]
+            SessaoDeLogin.nome = resultado[0][1]
+            SessaoDeLogin.cargo = resultado[0][2]
+            return True
+    except Exception as err:
+        print("Erro:", err)
+    finally:
+        conn.close()

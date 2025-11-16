@@ -6,7 +6,6 @@ from theme import colors
 from database.queries import get_ultimas_vendas
 
 ultimas_vendas = get_ultimas_vendas()
-print(ultimas_vendas)
 
 def editar_entrada():
     print('Clicou em editar')
@@ -16,9 +15,8 @@ def excluir_entrada():
 
 class Coluna3(ctk.CTkFrame):
     def __init__(self, parent):
-        super().__init__(parent)
+        super().__init__(parent, fg_color="green")
 
-        self.grid_columnconfigure(0, weight=0)
         self.grid_rowconfigure(0, weight=1)
 
         linha1 = ctk.CTkFrame(
@@ -27,7 +25,7 @@ class Coluna3(ctk.CTkFrame):
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
         
-        linha1.grid(row=0, column=0, sticky="nsew", padx=10, pady=5)
+        linha1.grid(row=0, column=0, sticky="new")
 
         # linha1.grid_rowconfigure(1, weight=1)  # linha do scroll ocupa o espaço vertical
         # linha1.grid_columnconfigure(0, weight=1)
