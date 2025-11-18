@@ -26,6 +26,10 @@ class Login(ctk.CTkFrame):
             else : status_login_mensagem.configure(text="Usuário ou senha incorretos")
 
 
+        # Agilizar o login
+        login_nome = ctk.StringVar(value="daniel")
+        login_senha = ctk.StringVar(value="1234")
+
         logo = ctk.CTkImage(
             light_image=Image.open("assets/img/SOSLimp.png"),
             dark_image=Image.open("assets/img/SOSLimp.png"),
@@ -37,10 +41,10 @@ class Login(ctk.CTkFrame):
         label_login = ctk.CTkLabel(self, text="Bem-vindo", width=40, height=28, fg_color="transparent", font=("", 30))
         label_login.pack(side="top", pady=20)
 
-        usuario_input = ctk.CTkEntry(self, placeholder_text="Usuário", width=250, height=35, font=("", 15))
+        usuario_input = ctk.CTkEntry(self, placeholder_text="Usuário", width=250, height=35, font=("", 15), textvariable=login_nome)
         usuario_input.pack(side="top", pady=5)
 
-        senha_input = ctk.CTkEntry(self, placeholder_text="Senha", width=250, height=35, font=("", 15), show="*")
+        senha_input = ctk.CTkEntry(self, placeholder_text="Senha", width=250, height=35, font=("", 15), show="*", textvariable=login_senha)
         senha_input.pack(side="top", pady=5)
 
         opcao_de_loja = ctk.CTkOptionMenu(self, width=250, variable=loja_escolhida, values=list(lojas.keys()))

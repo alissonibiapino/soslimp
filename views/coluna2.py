@@ -4,6 +4,9 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 
+from sessao import SessaoDeLogin
+from theme import fonts
+
 # Cores
 from theme import colors
 
@@ -33,8 +36,8 @@ class Coluna2(ctk.CTkFrame):
         
         linha2.grid(row=1, column=0, sticky="new")
 
-        label_infos_loja = ctk.CTkLabel(linha2, text='Informação futura')
-        label_infos_loja.place(x=10, y=10)
+        label_bem_vindo = ctk.CTkLabel(linha2, text=f'Bem vindo, {SessaoDeLogin.nome}', font=fonts.FONTE_TITULO)
+        label_bem_vindo.place(x=10, y=10)
 
         # Linha 3
         linha3 = ctk.CTkFrame(

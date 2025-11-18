@@ -68,7 +68,6 @@ class Coluna1(ctk.CTkFrame):
 
             entrada_quantidade.configure(state="normal")
             select_transacao.configure(state="normal")
-            entrada_valor_cliente.configure(state="normal")
             atualizar_valor(1)
 
         def atualizar_valor(quantidade):
@@ -171,13 +170,6 @@ class Coluna1(ctk.CTkFrame):
         select_transacao = ctk.CTkOptionMenu(linha2, variable=transacao_selecionada, values=list(transacoes.values()), state="disabled")
         select_transacao.grid(row=4, column=0, padx=20, sticky='nsew')
 
-        entrada_valor_cliente = ctk.CTkEntry (
-                linha2,
-                placeholder_text="Dinheiro do cliente",
-                state="disabled"
-            )
-        entrada_valor_cliente.grid(row=5, column=0, padx=20, pady=10, sticky='nsew')
-
         label_resumo = ctk.CTkLabel (
             linha2,
             text="Resumo da compra",
@@ -199,23 +191,19 @@ class Coluna1(ctk.CTkFrame):
         resumo_frame_esq.grid(row=0, column=0, sticky="n")
 
         produto_metodo = ctk.CTkLabel (resumo_frame_esq, text="Método de pagamento")
-        produto_metodo.grid(row=2, column=0, sticky="nw")
+        produto_metodo.grid(row=1, column=0, sticky="nw")
 
         produto_valor = ctk.CTkLabel (resumo_frame_esq, text="Valor unitário")
-        produto_valor.grid(row=3, column=0, sticky="nw")
+        produto_valor.grid(row=2, column=0, sticky="nw")
 
         produto_quantidade = ctk.CTkLabel (resumo_frame_esq, text="Quantidade")
-        produto_quantidade.grid(row=4, column=0, sticky="nw")
+        produto_quantidade.grid(row=3, column=0, sticky="nw")
 
         valor_compra = ctk.CTkLabel (resumo_frame_esq, text="Valor total da compra")
-        valor_compra.grid(row=5, column=0, sticky="nw")
-
-        valor_troco = ctk.CTkLabel (resumo_frame_esq, text="Valor do troco")
-        valor_troco.grid(row=6, column=0, sticky="nw")
+        valor_compra.grid(row=4, column=0, sticky="nw")
 
         resumo_frame_dir = ctk.CTkFrame (resumo_frame, fg_color="red")
         resumo_frame_dir.grid(row=0, column=1, padx=10, sticky="n")
-        # resumo_frame_esq.grid_columnconfigure(0, weight=1)
 
         produto_metodo_var = ctk.CTkLabel (resumo_frame_dir, text=f"{transacao_selecionada.get()}", textvariable=(transacao_selecionada))
         produto_metodo_var.grid(row=0, column=0, sticky="nw")
@@ -228,31 +216,9 @@ class Coluna1(ctk.CTkFrame):
 
         produto_valor_total = ctk.CTkLabel (resumo_frame_dir, text=f"")
         produto_valor_total.grid(row=3, column=0, sticky="nw")
-
-        # label_resumo_produto = ctk.CTkLabel (
-        #     resumo_frame,
-        #     text=f"{produto_selecionado.get()}",
-        #     textvariable=(produto_selecionado)
-        # )
-        # label_resumo_produto.grid(row=0, column=0, sticky='nw')
-
         
-        # label_resumo_produto_descricao = ctk.CTkLabel (
-        #     resumo_frame,
-        #     textvariable=(produto_selecionado_descricao)
-        # )
-        # label_resumo_produto_descricao.grid(row=1, column=0, sticky='nw')
-        
-
         botao_registrar_compra = ctk.CTkButton(linha2, text="REGISTRAR COMPRA", height=35, command=registrar_venda)
         botao_registrar_compra.grid(row=10, column=0, padx=20, pady=10, sticky='nsew')
-
-        # # select_colaborador = ctk.CTkOptionMenu (
-        # #     linha2_conteudo,
-        # #     values=nomes_colaboradores,
-        # #     variable=colaborador_selecionado
-        # # )
-        # # select_colaborador.grid(row=0, column=2, padx=5, sticky='nsew')
 
         # Linha 3
         linha3 = ctk.CTkFrame(

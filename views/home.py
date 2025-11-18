@@ -10,13 +10,17 @@ class Home(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="blue")
         
-        # # Configuração do layout
-        # self.grid_columnconfigure(0)
-        # self.grid_columnconfigure(1)
-        # self.grid_columnconfigure(2)
+        # Configuração do layout
+        self.grid_columnconfigure(0)
+        self.grid_columnconfigure(0, weight=1, minsize=500)
+
+        self.grid_columnconfigure(1)
+        self.grid_columnconfigure(1, weight=1, minsize=350)
+
+        self.grid_columnconfigure(2)
+        self.grid_columnconfigure(1, weight=1, minsize=350)
 
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
 
         # Jogando as views no App
         col1 = Coluna1(self, master)

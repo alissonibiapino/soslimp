@@ -3,7 +3,7 @@ from PIL import Image
 
 # Outras views
 from views.home import Home
-from views.transaction import Transaction
+from views.produtos import Transaction
 from views.login import Login
 
 from theme import fonts

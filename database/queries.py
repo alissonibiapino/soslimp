@@ -139,13 +139,20 @@ def login(usuario, senha, loja):
         cur = conn.cursor()
         cur.execute("SELECT	c.cod_colaborador, c.nome, c.cargo FROM colaborador_login INNER JOIN colaborador c USING (cod_colaborador) WHERE usuario = %s AND senha_hash = %s;", (usuario, senha))
         resultado = cur.fetchall()
-
         if resultado == []:
             return False
         else:
             SessaoDeLogin.cod_colaborador = resultado[0][0]
             SessaoDeLogin.nome = resultado[0][1]
             SessaoDeLogin.cargo = resultado[0][2]
+            SessaoDeLogin.loja_cod = loja
+            print(type(loja))
+            cur.execute("SELECT nome_loja, endereco, telefone, email FROM loja WHERE cod_loja = %s;", (loja,))
+            resultado2 = cur.fetchone()
+            SessaoDeLogin.loja_nome = resultado2[0]
+            SessaoDeLogin.loja_end = resultado2[1]
+            SessaoDeLogin.loja_num = resultado2[2]
+            SessaoDeLogin.loja_email = resultado2[3]
             return True
     except Exception as err:
         print("Erro:", err)
