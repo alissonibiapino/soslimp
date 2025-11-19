@@ -14,6 +14,22 @@ def get_colaboradores():
     return colaboradores
 
 
+def delete_colaborador(cod_colaborador):
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM colaborador_trabalha WHERE cod_colaborador = %s;", (cod_colaborador, ))
+        cur.execute("DELETE FROM colaborador  WHERE cod_colaborador = %s;", (cod_colaborador, ))
+        conn.commit()
+    except Exception as err:
+        print("Erro: ", err)
+        conn.rollback()
+    else:
+        print("Tudo certo!")
+    finally:
+        conn.close()
+
+
 # QUERIES DE PRODUTOS
 
 def get_categorias():
@@ -56,7 +72,21 @@ def get_produtos_por_categoria(categoria):
         for cod_produto, descricao, nome_produto, marca, preco in resultado
     }
     # print(produtos_dict)
-    return produtos_dict
+    return 
+
+def insert_novo_produto(cod_categoria, nome_produto, descricao, marca, preco_unitario):
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO produto (cod_categoria, nome_produto, descricao, marca, preco_unitario) VALUES (%s, %s, %s, %s, %s);", (cod_categoria, nome_produto, descricao, marca, preco_unitario))
+        conn.commit()
+    except Exception as err:
+        print("Erro: ", err)
+        conn.rollback()
+    else:
+        print("Tudo certo!")
+    finally:
+        conn.close()
 
 
 
@@ -94,7 +124,39 @@ def insert_registra_pedido(cod_loja, cod_colaborador, cod_forma_pag, valor_total
         conn.close()
    
 
-# def insert_registra_pedido_detalhe (cod_produto, quantidade, preco_unitario, cod_venda):
+def delete_registro_pedido(cod_movimentacao, cod_caixa, cod_venda, cod_forma_pag):
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        # if cod_forma_pag == 4:
+        #     cur.execute("UPDATE caixa SET valor_atual = (valor_atual + ( SELECT valor FROM movimentacao_caixa WHERE cod_movimentacao = %s )) WHERE cod_caixa = %s;" (cod_movimentacao, cod_caixa))
+        cur.execute("DELETE FROM detalhes_pedido WHERE cod_venda = %s;", (cod_venda,))
+        cur.execute("DELETE FROM movimentacao_caixa WHERE cod_venda = %s;", (cod_venda,))
+        cur.execute("DELETE FROM registro_pedido WHERE cod_venda = %s;", (cod_venda,))
+        conn.commit()
+    except Exception as err:
+        print("Erro: ", err)
+        conn.rollback()
+    else:
+        print("Tudo certo!")
+    finally:
+        print("Fechando conexão")
+        conn.close()
+   
+def update_registro_pedido(quantidade, cod_detalhes, cod_venda):
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("UPDATE detalhes_pedido SET quantidade = %s WHERE cod_detalhes = %s;", (quantidade, cod_detalhes))
+        cur.execute("UPDATE registro_pedido SET valor_total = (SELECT SUM(dp.quantidade * dp.preco_unitario) FROM detalhes_pedido dp WHERE dp.cod_venda = %s) WHERE cod_venda = %s;", (cod_venda))
+    except Exception as err:
+        print("Erro: ", err)
+        conn.rollback()
+    else:
+        print("Tudo certo!")
+    finally:
+        print("Fechando conexão")
+        conn.close()
 
 
     
@@ -156,5 +218,21 @@ def login(usuario, senha, loja):
             return True
     except Exception as err:
         print("Erro:", err)
+    finally:
+        conn.close()
+
+
+def delete_loja(cod_loja):
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM colaborador_trabalha WHERE cod_colaborador = %s;", (cod_loja, ))
+        cur.execute("DELETE FROM colaborador  WHERE cod_colaborador = %s;", (cod_loja, ))
+        conn.commit()
+    except Exception as err:
+        print("Erro: ", err)
+        conn.rollback()
+    else:
+        print("Tudo certo!")
     finally:
         conn.close()
