@@ -21,7 +21,7 @@ from theme import colors, fonts
 
 class Coluna1(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent, fg_color="#212121")
+        super().__init__(parent)
         self.controller = controller
 
         # Tipos de transação
@@ -117,7 +117,7 @@ class Coluna1(ctk.CTkFrame):
             border_color=colors.AZUL_SECUNDARIO
         )
         
-        linha1.grid(row=0, column=0, sticky="ew")
+        linha1.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
         linha1.grid_columnconfigure(0, weight=1)
 
         logo = ctk.CTkImage(
@@ -138,7 +138,7 @@ class Coluna1(ctk.CTkFrame):
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
         
-        linha2.grid(row=1, column=0, sticky="nsew")
+        linha2.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
         linha2.grid_columnconfigure(0, weight=1)
         linha2.grid_rowconfigure(0, weight=1)
 
@@ -183,11 +183,11 @@ class Coluna1(ctk.CTkFrame):
         produto_descricao = ctk.CTkLabel (label_resumo, text=f"{produto_selecionado_descricao.get()}", textvariable=(produto_selecionado_descricao))
         produto_descricao.grid(row=8, column=0, padx=10, pady=(0, 15), sticky="nw")
 
-        resumo_frame = ctk.CTkFrame(linha2, fg_color="#212121")
+        resumo_frame = ctk.CTkFrame(linha2)
         resumo_frame.grid(row=9, column=0, pady=5, padx=30, sticky="w")
         resumo_frame.grid_columnconfigure(0, weight=1)
 
-        resumo_frame_esq = ctk.CTkFrame (resumo_frame, fg_color="#039340")
+        resumo_frame_esq = ctk.CTkFrame (resumo_frame)
         resumo_frame_esq.grid(row=0, column=0, sticky="n")
 
         produto_metodo = ctk.CTkLabel (resumo_frame_esq, text="Método de pagamento")
@@ -202,7 +202,7 @@ class Coluna1(ctk.CTkFrame):
         valor_compra = ctk.CTkLabel (resumo_frame_esq, text="Valor total da compra")
         valor_compra.grid(row=4, column=0, sticky="nw")
 
-        resumo_frame_dir = ctk.CTkFrame (resumo_frame, fg_color="red")
+        resumo_frame_dir = ctk.CTkFrame (resumo_frame)
         resumo_frame_dir.grid(row=0, column=1, padx=10, sticky="n")
 
         produto_metodo_var = ctk.CTkLabel (resumo_frame_dir, text=f"{transacao_selecionada.get()}", textvariable=(transacao_selecionada))
@@ -227,7 +227,7 @@ class Coluna1(ctk.CTkFrame):
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
         
-        linha3.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
+        linha3.grid(row=2, column=0, sticky="nsew", padx=5, pady=5)
         linha3.grid_columnconfigure(0, weight=1)
 
         label_linha3_valor_caixa = ctk.CTkLabel (

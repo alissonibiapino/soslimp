@@ -12,7 +12,7 @@ from theme import colors
 
 class Coluna2(ctk.CTkFrame):
     def __init__(self, parent):
-        super().__init__(parent, fg_color="red")
+        super().__init__(parent)
         
         self.grid_columnconfigure(0, weight=1)
 
@@ -24,7 +24,7 @@ class Coluna2(ctk.CTkFrame):
             border_color=colors.AZUL_SECUNDARIO,
             height=80
         )        
-        linha1.grid(row=0, column=0, sticky="new")
+        linha1.grid(row=0, column=0, sticky="new", padx=5, pady=5)
         
 
         # Linha 2
@@ -34,7 +34,7 @@ class Coluna2(ctk.CTkFrame):
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
         
-        linha2.grid(row=1, column=0, sticky="new")
+        linha2.grid(row=1, column=0, sticky="new", padx=5, pady=5)
 
         label_bem_vindo = ctk.CTkLabel(linha2, text=f'Bem vindo, {SessaoDeLogin.nome}', font=fonts.FONTE_TITULO)
         label_bem_vindo.place(x=10, y=10)
@@ -46,7 +46,7 @@ class Coluna2(ctk.CTkFrame):
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
         
-        linha3.grid(row=2, column=0, sticky="new")
+        linha3.grid(row=2, column=0, sticky="new", padx=5, pady=5)
 
         # fig, ax = plt.subplots(figsize=(4, 2), subplot_kw=dict(aspect="equal"))
         # fig.subplots_adjust(left=0, right=1, top=1, bottom=0)

@@ -15,7 +15,7 @@ def excluir_entrada():
 
 class Coluna3(ctk.CTkFrame):
     def __init__(self, parent):
-        super().__init__(parent, fg_color="green")
+        super().__init__(parent)
 
         self.grid_rowconfigure(0, weight=1)
 
@@ -25,7 +25,7 @@ class Coluna3(ctk.CTkFrame):
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
         
-        linha1.grid(row=0, column=0, sticky="new")
+        linha1.grid(row=0, column=0, sticky="new", padx=5, pady=5)
 
         # linha1.grid_rowconfigure(1, weight=1)  # linha do scroll ocupa o espaço vertical
         # linha1.grid_columnconfigure(0, weight=1)
@@ -37,7 +37,7 @@ class Coluna3(ctk.CTkFrame):
         # linha_historico.grid(row=1, column=0, padx=6, pady=0, sticky="nsew")
 
         linha_historico = ctk.CTkFrame(linha1)
-        linha_historico.grid(row=1, column=0, padx=6, pady=0)
+        linha_historico.grid(row=1, column=0, padx=6, pady=6)
 
         for linha, (id_venda, dados) in enumerate(ultimas_vendas.items()):
             linha_venda = ctk.CTkFrame(linha_historico)

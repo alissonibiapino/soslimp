@@ -8,7 +8,7 @@ from views.coluna3 import Coluna3
 
 class Home(ctk.CTkFrame):
     def __init__(self, master):
-        super().__init__(master, fg_color="blue")
+        super().__init__(master)
         
         # Configuração do layout
         self.grid_columnconfigure(0)

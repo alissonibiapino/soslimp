@@ -35,7 +35,7 @@ def delete_colaborador(cod_colaborador):
 def get_categorias():
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT cod_categoria, categoria_produto FROM categoria")
+    cur.execute("SELECT cod_categoria, categoria_produto FROM categoria;")
     resultado = cur.fetchall()
 
     categorias_dict = {
@@ -72,7 +72,7 @@ def get_produtos_por_categoria(categoria):
         for cod_produto, descricao, nome_produto, marca, preco in resultado
     }
     # print(produtos_dict)
-    return 
+    return produtos_dict
 
 def insert_novo_produto(cod_categoria, nome_produto, descricao, marca, preco_unitario):
     try:
@@ -95,7 +95,8 @@ def insert_novo_produto(cod_categoria, nome_produto, descricao, marca, preco_uni
 def get_ultimas_vendas():
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT cod_venda, INITCAP(forma_pagamento.tipo_pagamento), hora_do_registro, valor_total FROM registro_pedido rp INNER JOIN forma_pagamento USING (cod_forma_pag) WHERE hora_do_registro >= current_date - INTERVAL '7 days';")
+    cur.execute("SELECT cod_venda, INITCAP(forma_pagamento.tipo_pagamento), hora_do_registro, valor_total FROM registro_pedido rp INNER JOIN forma_pagamento USING (cod_forma_pag) WHERE DATE(hora_do_registro) = CURRENT_DATE;")
+    # cur.execute("SELECT cod_venda, INITCAP(forma_pagamento.tipo_pagamento), hora_do_registro, valor_total FROM registro_pedido rp INNER JOIN forma_pagamento USING (cod_forma_pag) WHERE hora_do_registro >= current_date - INTERVAL '7 days';")
     resultado = cur.fetchall()
     conn.close()
 
