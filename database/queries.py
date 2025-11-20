@@ -92,20 +92,31 @@ def insert_novo_produto(cod_categoria, nome_produto, descricao, marca, preco_uni
 
 # QUERIES DE VENDAS
 
-def get_ultimas_vendas():
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT cod_venda, INITCAP(forma_pagamento.tipo_pagamento), hora_do_registro, valor_total FROM registro_pedido rp INNER JOIN forma_pagamento USING (cod_forma_pag) WHERE DATE(hora_do_registro) = CURRENT_DATE;")
+def get_ultimas_vendas(cod_loja):
+    try:
+        print(cod_loja)
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("SELECT cod_venda, INITCAP(forma_pagamento.tipo_pagamento), hora_do_registro, valor_total FROM registro_pedido rp INNER JOIN forma_pagamento USING (cod_forma_pag) WHERE DATE(hora_do_registro) = CURRENT_DATE AND cod_loja = %s ORDER BY hora_do_registro DESC;", (1,))
+        conn.commit()
+        resultado = cur.fetchall()
+        conn.close()
+
+        ultimas_vendas_dict = {
+            id_reg_venda: {"id":id_reg_venda, "forma_pagamento":tipo_pagamento, "data":data_reg_venda, "preco_unitario":preco_unitario}
+            for id_reg_venda, tipo_pagamento, data_reg_venda, preco_unitario in resultado
+        }
+
+        return ultimas_vendas_dict
+    except Exception as err:
+        print("Erro: ", err)
+        conn.rollback()
+    finally:
+        conn.close()
+
+    
     # cur.execute("SELECT cod_venda, INITCAP(forma_pagamento.tipo_pagamento), hora_do_registro, valor_total FROM registro_pedido rp INNER JOIN forma_pagamento USING (cod_forma_pag) WHERE hora_do_registro >= current_date - INTERVAL '7 days';")
-    resultado = cur.fetchall()
-    conn.close()
 
-    ultimas_vendas_dict = {
-        id_reg_venda: {"id":id_reg_venda, "forma_pagamento":tipo_pagamento, "data":data_reg_venda, "preco_unitario":preco_unitario}
-        for id_reg_venda, tipo_pagamento, data_reg_venda, preco_unitario in resultado
-    }
-
-    return ultimas_vendas_dict
 
 def insert_registra_pedido(cod_loja, cod_colaborador, cod_forma_pag, valor_total, cod_produto, quantidade, preco_unitario):
     try:

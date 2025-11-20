@@ -5,7 +5,8 @@ from theme import colors
 
 from database.queries import get_ultimas_vendas
 
-ultimas_vendas = get_ultimas_vendas()
+from sessao import SessaoDeLogin
+ultimas_vendas = get_ultimas_vendas(SessaoDeLogin.loja_cod)
 
 def editar_entrada():
     print('Clicou em editar')
@@ -25,16 +26,18 @@ class Coluna3(ctk.CTkFrame):
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
         
-        linha1.grid(row=0, column=0, sticky="new", padx=5, pady=5)
-
-        # linha1.grid_rowconfigure(1, weight=1)  # linha do scroll ocupa o espaço vertical
-        # linha1.grid_columnconfigure(0, weight=1)
+        linha1.grid_rowconfigure(1, weight=1)
+        linha1.grid_columnconfigure(0, weight=1)
+        linha1.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        
 
         ultimas_entradas_label = ctk.CTkLabel(linha1, text="ÚLTIMAS ENTRADAS", font=("Arial", 20))
         ultimas_entradas_label.grid(row=0, column=0, sticky="nsew", padx=20, pady=10)
 
         # linha_historico = ctk.CTkScrollableFrame(linha1, scrollbar_button_color=colors.AZUL_SECUNDARIO, scrollbar_button_hover_color=colors.AZUL_PRIMARIO)
-        # linha_historico.grid(row=1, column=0, padx=6, pady=0, sticky="nsew")
+        # linha_historico.grid(row=1, column=0, padx=6, pady=6, sticky="nsew")
+        # linha_historico._scrollbar.grid_remove()
+
 
         linha_historico = ctk.CTkFrame(linha1)
         linha_historico.grid(row=1, column=0, padx=6, pady=6)
@@ -55,7 +58,7 @@ class Coluna3(ctk.CTkFrame):
                     dark_image = Image.open("assets/img/pix.png"),
                     size=(12, 12)
                 )
-                forma_de_pagamento_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=forma_de_pagamento_icon)
+                forma_de_pagamento_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=forma_de_pagamento_icon, width=20)
                 forma_de_pagamento_label.grid(row=0, column=0, pady=0, sticky="n")
                 coluna_tipo_pagamento = ctk.CTkLabel(coluna_tipo_pagamento, text=f"{dados['forma_pagamento']}", width=60, anchor='w')
                 coluna_tipo_pagamento.grid(row=0, column=1, padx=6, pady=0)
@@ -66,7 +69,7 @@ class Coluna3(ctk.CTkFrame):
                     dark_image = Image.open("assets/img/cartao.png"),
                     size=(12, 12)
                 )
-                forma_de_pagamento_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=forma_de_pagamento_icon)
+                forma_de_pagamento_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=forma_de_pagamento_icon, width=20)
                 forma_de_pagamento_label.grid(row=0, column=0, pady=0, sticky="n")
                 coluna_tipo_pagamento = ctk.CTkLabel(coluna_tipo_pagamento, text=f"{dados['forma_pagamento']}", width=60, anchor='w')
                 coluna_tipo_pagamento.grid(row=0, column=1, padx=6, pady=0)
@@ -77,7 +80,7 @@ class Coluna3(ctk.CTkFrame):
                     dark_image = Image.open("assets/img/cartao.png"),
                     size=(12, 12)
                 )
-                forma_de_pagamento_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=forma_de_pagamento_icon)
+                forma_de_pagamento_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=forma_de_pagamento_icon, width=20)
                 forma_de_pagamento_label.grid(row=0, column=0, pady=0, sticky="n")
                 coluna_tipo_pagamento = ctk.CTkLabel(coluna_tipo_pagamento, text=f"{dados['forma_pagamento']}", width=60, anchor='w')
                 coluna_tipo_pagamento.grid(row=0, column=1, padx=6, pady=0)
@@ -88,9 +91,9 @@ class Coluna3(ctk.CTkFrame):
                     dark_image = Image.open("assets/img/dinheiro.png"),
                     size=(8, 12)
                 )
-                forma_de_pagamento_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=forma_de_pagamento_icon)
+                forma_de_pagamento_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=forma_de_pagamento_icon, width=20)
                 forma_de_pagamento_label.grid(row=0, column=0, pady=0, sticky="n")
-                coluna_tipo_pagamento = ctk.CTkLabel(coluna_tipo_pagamento, text=f"{dados['forma_pagamento']}", anchor='w')
+                coluna_tipo_pagamento = ctk.CTkLabel(coluna_tipo_pagamento, text=f"{dados['forma_pagamento']}", width=60, anchor='w')
                 coluna_tipo_pagamento.grid(row=0, column=1, padx=6, pady=0)
 
             editar_icon = ctk.CTkImage(

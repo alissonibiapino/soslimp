@@ -56,5 +56,5 @@ class Login(ctk.CTkFrame):
         botao_login = ctk.CTkButton(self, text="Login", width=250, height=35, font=("", 15), command=logar)
         botao_login.pack(side="top", pady=15)
 
-        registrar_login = ctk.CTkButton(self, text="Registrar novo usuário", fg_color="#FAFAFA", border_width = 2, border_color = "#212121", text_color="#212121", hover_color="#EEEEEE", width=250, height=35, font=("", 15))
-        registrar_login.pack(side="top", pady=15)
+        # registrar_login = ctk.CTkButton(self, text="Registrar novo usuário", fg_color="#FAFAFA", border_width = 2, border_color = "#212121", text_color="#212121", hover_color="#EEEEEE", width=250, height=35, font=("", 15))
+        # registrar_login.pack(side="top", pady=15)
