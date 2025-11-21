@@ -23,7 +23,7 @@ class Home(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
 
         # Jogando as views no App
-        col2 = Coluna2(self)
+        col2 = Coluna2(self, master)
         col2.grid(row=0, column=1, padx=10, sticky="nsew")
 
         col3 = Coluna3(self)

@@ -9,9 +9,10 @@ from database.queries import get_ultimas_vendas
 from theme import colors
 
 class Coluna2(ctk.CTkFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, controller):
         super().__init__(parent)
-
+        self.controller = controller
+        
         self.valor_total = 0
         self.carregar_coluna2()
 
@@ -44,7 +45,7 @@ class Coluna2(ctk.CTkFrame):
         )        
         linha1.grid(row=0, column=0, sticky="new", padx=5, pady=5)
 
-        ir_produtos = ctk.CTkButton(self, text="Ir para produtos", font=("", 20))
+        ir_produtos = ctk.CTkButton(self, text="Ir para produtos", font=("", 20), command=self.controller.show_produtos)
         ir_produtos.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
                         
         # Linha 2

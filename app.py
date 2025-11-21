@@ -3,7 +3,7 @@ from PIL import Image
 
 # Outras views
 from views.home import Home
-from views.produtos import Transaction
+from views.produtos import Produtos
 from views.login import Login
 
 from theme import fonts
@@ -20,7 +20,7 @@ class App(ctk.CTk):
         fonts.iniciar_fontes()
 
         self.current_frame = None
-        self.show_login()
+        self.show_produtos()
     
     def show_login(self):
         if self.current_frame:
@@ -34,10 +34,10 @@ class App(ctk.CTk):
         self.current_frame = Home(self)
         self.current_frame.pack(fill="both", expand=True)
 
-    def show_transaction(self):
+    def show_produtos(self):
         if self.current_frame:
             self.current_frame.destroy()
-        self.current_frame = Transaction(self)
+        self.current_frame = Produtos(self)
         self.current_frame.pack(fill="both", expand=True)
 
 if __name__ == "__main__":

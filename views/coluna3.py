@@ -15,8 +15,8 @@ def excluir_entrada():
 class Coluna3(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
-
-        self.grid_rowconfigure(0, weight=1)
+        # self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
         self.carregar_coluna3()
 
     def atualizar(self):
@@ -29,23 +29,29 @@ class Coluna3(ctk.CTkFrame):
             self,
             corner_radius=10,
             border_width=2,
+            border_color=colors.AZUL_SECUNDARIO,
+            height=80
+        )        
+        linha1.grid(row=0, column=0, sticky="new", padx=5, pady=5)
+
+        ir_dashboard = ctk.CTkButton(self, text="Ir para dashboard", font=("", 20))
+        ir_dashboard.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+
+        linha2 = ctk.CTkFrame(
+            self,
+            corner_radius=10,
+            border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
-        
-        linha1.grid_rowconfigure(1, weight=1)
-        linha1.grid_columnconfigure(0, weight=1)
-        linha1.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
-        
+        linha2.grid(row=1, column=0, padx=5, pady=5, sticky="nsew")
+        linha2.grid_columnconfigure(0, weight=1)
+        linha2.grid_rowconfigure(0, weight=1)
 
-        ultimas_entradas_label = ctk.CTkLabel(linha1, text="ÚLTIMAS ENTRADAS", font=("Arial", 20))
-        ultimas_entradas_label.grid(row=0, column=0, sticky="nsew", padx=20, pady=10)
-
-        # linha_historico = ctk.CTkScrollableFrame(linha1, scrollbar_button_color=colors.AZUL_SECUNDARIO, scrollbar_button_hover_color=colors.AZUL_PRIMARIO)
-        # linha_historico.grid(row=1, column=0, padx=6, pady=6, sticky="nsew")
-        # linha_historico._scrollbar.grid_remove()
+        ultimas_entradas_label = ctk.CTkLabel(linha2, text="ÚLTIMAS ENTRADAS", font=("Arial", 20))
+        ultimas_entradas_label.grid(row=0, column=0, sticky="new", padx=20, pady=10)
 
         ultimas_vendas = get_ultimas_vendas(SessaoDeLogin.loja_cod)
 
-        linha_historico = ctk.CTkFrame(linha1)
+        linha_historico = ctk.CTkFrame(linha2)
         linha_historico.grid(row=1, column=0, padx=6, pady=6)
 
         for linha, (id_venda, dados) in enumerate(ultimas_vendas.items()):
