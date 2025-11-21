@@ -1,55 +1,48 @@
 import customtkinter as ctk
 import matplotlib.pyplot as plt
-import time
 from decimal import Decimal
 
 from PIL import Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-# from views import coluna3.
-# from app import show_home
 
-from database.queries import get_colaboradores, get_caixa_atual, get_categorias, get_produtos_por_categoria, insert_registra_pedido
+from database.queries import get_caixa_atual, get_categorias, get_produtos_por_categoria, insert_registra_pedido
 
 caixa_atual = get_caixa_atual()
 categorias = get_categorias()
 
-
 from theme import colors, fonts
-
-# colaboradores_dict = {nome_pessoa: cod_pessoa for cod_pessoa, nome_pessoa in colaboradores}
-# nomes_colaboradores = list(colaboradores_dict.keys())
+from sessao import SessaoDeLogin
 
 class Coluna1(ctk.CTkFrame):
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, coluna2, coluna3):
         super().__init__(parent)
         self.controller = controller
+        self.coluna2 = coluna2
+        self.coluna3 = coluna3
+        self.carregar_coluna1()
+    
+    def atualizar(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+        self.carregar_coluna1()
 
-        # Tipos de transação
-        transacoes = {
-            1: 'DÉBITO',
-            2: 'CRÉDITO',
-            3: 'PIX',
-            4: 'DINHEIRO'
-        }
-        
-        self.grid_columnconfigure(0, weight=1)
+    def carregar_coluna1(self):
+        self.produtos = {}        
+        self.grid_columnconfigure(0, weight=1) 
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=1)
 
+        # Inputs padrões
         categoria_selecionada = ctk.StringVar(value="Categoria do produto")
         transacao_selecionada = ctk.StringVar(value="Seleciona método de pagamento")
-
         produto_selecionado = ctk.StringVar(value="Selecione um produto")
         produto_selecionado_descricao = ctk.StringVar(value="Descrição")
         produto_selecionado_quantidade = ctk.StringVar(value="0")
         
-        # colaborador_selecionado = ctk.StringVar(value="Selecione")
+        # Tipos de transação
+        transacoes = {1: 'DÉBITO', 2: 'CRÉDITO', 3: 'PIX', 4: 'DINHEIRO'}
 
-        # self.grid_rowconfigure(0, weight=1)
-        # self.grid_rowconfigure(1, weight=1)
-        # self.grid_rowconfigure(2, weight=1)
-        # self.grid_rowconfigure(3, weight=1)
-
-        self.produtos = {}
-
+        # Funções
         def atualizar_produtos(categoria_nome):
             id_categoria = categorias[categoria_nome]
             self.produtos = get_produtos_por_categoria(id_categoria)
@@ -58,13 +51,9 @@ class Coluna1(ctk.CTkFrame):
 
         def atualizar_preco(produto_nome):
             produto_info = self.produtos.get(produto_nome)
-            # print(produto_info["descricao"])
-            # print(produto_info["preco"])
-            # print(produto_info["marca"])
             if produto_info:
                 produto_selecionado_descricao.set(produto_info["descricao"])
                 produto_valor_var.configure(text=f"{produto_info['preco']}")
-                # produto_valor_total.configure(text=f"R$ {produto_info['preco'] * int(produto_selecionado_quantidade.get())}")
 
             entrada_quantidade.configure(state="normal")
             select_transacao.configure(state="normal")
@@ -83,31 +72,21 @@ class Coluna1(ctk.CTkFrame):
                 return True
             return False
         
+        vcmd = (self.register(valida_quantidade), "%P")
+        
         def registrar_venda():
+            loja_cod = SessaoDeLogin.loja_cod
             cod_produto_selecionado = self.produtos.get(produto_selecionado.get())
             preco_produto_selecionado = self.produtos.get(produto_selecionado.get())
             tipo_pagamento_produto_selecionado = 0
-
             if transacao_selecionada.get() == "DÉBITO": tipo_pagamento_produto_selecionado = 1
             if transacao_selecionada.get() == "CRÉDITO": tipo_pagamento_produto_selecionado = 2
             if transacao_selecionada.get() == "PIX": tipo_pagamento_produto_selecionado = 3
             if transacao_selecionada.get() == "DINHEIRO": tipo_pagamento_produto_selecionado = 4
-            # print("Código da loja: ")
-            # print("Código do colaborador: ")
-            # print("Forma de pagamento: ", tipo_pagamento_produto_selecionado)
-            # print("Valor total: ", )
-            # print("Hora do registro: ", time.time())
-            # print("==========================================")
-            # print("Código do produto: ", cod_produto_selecionado['cod_produto'])
-            # print("Quantidade: ", int(entrada_quantidade.get()))
-            # print("Preço unitário: ", preco_produto_selecionado['preco'])
-            # print("Código da venda: ")
-
-            insert_registra_pedido(1, 1, tipo_pagamento_produto_selecionado, round(Decimal(produto_valor_var.cget("text")) * int(entrada_quantidade.get()), 2), cod_produto_selecionado['cod_produto'], int(entrada_quantidade.get()), preco_produto_selecionado['preco'])
-            self.controller.show_home()
-            
-
-        vcmd = (self.register(valida_quantidade), "%P")
+            insert_registra_pedido(loja_cod, 1, tipo_pagamento_produto_selecionado, round(Decimal(produto_valor_var.cget("text")) * int(entrada_quantidade.get()), 2), cod_produto_selecionado['cod_produto'], int(entrada_quantidade.get()), preco_produto_selecionado['preco'])
+            self.atualizar()
+            self.coluna2.atualizar()
+            self.coluna3.atualizar()
 
         # Linha 1
         linha1 = ctk.CTkFrame(
@@ -117,8 +96,7 @@ class Coluna1(ctk.CTkFrame):
             border_color=colors.AZUL_SECUNDARIO
         )
         
-        linha1.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
-        linha1.grid_columnconfigure(0, weight=1)
+        linha1.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
         logo = ctk.CTkImage(
             light_image=Image.open("assets/img/SOSLimp.png"),
@@ -128,8 +106,8 @@ class Coluna1(ctk.CTkFrame):
         logo_label = ctk.CTkLabel(linha1, text="", image=logo)
         logo_label.grid(row=0, column=0, pady=15, padx=5, sticky="nsew")
 
-        # buttonTest = ctk.CTkButton(linha1, text="Ir para outra aba", command=self.controller.show_transaction)
-        # buttonTest.grid(row=0, column=0, pady=15, sticky="n")
+        linha1.grid_columnconfigure(0, weight=1)
+        linha1.grid_rowconfigure(0, weight=1)
 
         # Linha 2
         linha2 = ctk.CTkFrame(
@@ -149,7 +127,6 @@ class Coluna1(ctk.CTkFrame):
         )
         label_linha2_valor.grid(row=0, column=0, pady=(15, 10), padx=20, sticky='nw')
 
-                                                                                                # ESSE command ENVIA AUTOMATICAMENTE O VALOR SELECIONADO
         select_categoria = ctk.CTkOptionMenu(linha2, values=list(categorias.keys()), variable=categoria_selecionada, command=atualizar_produtos)
         select_categoria.grid(row=1, column=0, padx=20, sticky='nsew')
 
@@ -175,7 +152,7 @@ class Coluna1(ctk.CTkFrame):
             text="Resumo da compra",
             font=fonts.FONTE_TITULO
         )
-        label_resumo.grid(row=6, column=0, padx=20, sticky='nw')
+        label_resumo.grid(row=6, column=0, padx=20, pady=(12, 0), sticky='nw')
 
         produto_nome = ctk.CTkLabel (label_resumo, text=f"{produto_selecionado.get()}", textvariable=(produto_selecionado), font=("Segoe UI Bold", 16))
         produto_nome.grid(row=7, column=0, padx=10, sticky="nw")
@@ -187,6 +164,8 @@ class Coluna1(ctk.CTkFrame):
         resumo_frame.grid(row=9, column=0, pady=5, padx=30, sticky="w")
         resumo_frame.grid_columnconfigure(0, weight=1)
 
+
+        # Lado esquerdo do frame
         resumo_frame_esq = ctk.CTkFrame (resumo_frame)
         resumo_frame_esq.grid(row=0, column=0, sticky="n")
 
@@ -202,6 +181,8 @@ class Coluna1(ctk.CTkFrame):
         valor_compra = ctk.CTkLabel (resumo_frame_esq, text="Valor total da compra")
         valor_compra.grid(row=4, column=0, sticky="nw")
 
+
+        # Lado direito do frame
         resumo_frame_dir = ctk.CTkFrame (resumo_frame)
         resumo_frame_dir.grid(row=0, column=1, padx=10, sticky="n")
 
@@ -220,6 +201,7 @@ class Coluna1(ctk.CTkFrame):
         botao_registrar_compra = ctk.CTkButton(linha2, text="REGISTRAR COMPRA", height=35, command=registrar_venda)
         botao_registrar_compra.grid(row=10, column=0, padx=20, pady=10, sticky='nsew')
 
+
         # Linha 3
         linha3 = ctk.CTkFrame(
             self,
@@ -235,27 +217,3 @@ class Coluna1(ctk.CTkFrame):
             text=f"TROCO DISPONÍVEL EM CAIXA: R$ {float(caixa_atual[0][0]):.2f}".replace(".", ",")
         )
         label_linha3_valor_caixa.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-
-        # Linha 4
-        # linha4 = ctk.CTkFrame(
-        #     self,
-        #     corner_radius=10,
-        #     border_width=2,
-        #     border_color=colors.AZUL_SECUNDARIO)
-        
-        # linha4.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
-        # # linha4.grid_columnconfigure(0, weight=1)
-        # # linha4.grid_rowconfigure(0, weight=1)
-
-        # fig, ax = plt.subplots(figsize=(1, 3))
-
-        # horarios = ['08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h']
-        # counts = [12, 21, 55, 40, 65, 12, 30, 78, 51, 31, 13]
-        # bar_labels = ['08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h']
-        # bar_colors = [colors.AZUL_PRIMARIO, colors.AZUL_SECUNDARIO]
-
-        # ax.bar(horarios, counts, label=bar_labels, color=bar_colors)
-
-        # canvas = FigureCanvasTkAgg(fig, master=linha4)
-        # canvas_widget = canvas.get_tk_widget()
-        # canvas_widget.pack(side="top", fill="both", expand=False, padx=10, pady=10)

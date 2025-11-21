@@ -5,11 +5,19 @@ from theme import colors
 
 class Transaction(ctk.CTkFrame):
     def __init__(self, master):
-        super().__init__(master, fg_color=colors.BRANCO)
+        super().__init__(master)
 
-        label = ctk.CTkLabel(self, text='Essa é a tela de transaction', width=40, height=28, fg_color='transparent')
-        label.place(x=10, y=10)
+        self.grid_columnconfigure(0)
+        self.grid_columnconfigure(0, weight=1)
 
-        buttonTest = ctk.CTkButton(self, text="Ir para outra aba", command=master.show_home)
-        buttonTest.grid(row=0, column=0, pady=15, sticky="n")
+        self.grid_columnconfigure(1)
+        self.grid_columnconfigure(1, weight=1)
+
+        self.grid_rowconfigure(0, weight=1)
+
+        col1 = ctk.CTkFrame(self, fg_color="red")
+        col1.grid(row=0, column=0, padx=0, sticky="nsew")
+
+        col2 = ctk.CTkFrame(self, fg_color="green")
+        col2.grid(row=0, column=0, padx=0, sticky="nsew")
     

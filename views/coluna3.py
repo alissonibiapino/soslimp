@@ -1,12 +1,10 @@
 import customtkinter as ctk
 from PIL import Image
 
-from theme import colors
-
 from database.queries import get_ultimas_vendas
 
 from sessao import SessaoDeLogin
-ultimas_vendas = get_ultimas_vendas(SessaoDeLogin.loja_cod)
+from theme import colors
 
 def editar_entrada():
     print('Clicou em editar')
@@ -19,7 +17,14 @@ class Coluna3(ctk.CTkFrame):
         super().__init__(parent)
 
         self.grid_rowconfigure(0, weight=1)
+        self.carregar_coluna3()
 
+    def atualizar(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+        self.carregar_coluna3()
+
+    def carregar_coluna3(self):
         linha1 = ctk.CTkFrame(
             self,
             corner_radius=10,
@@ -38,6 +43,7 @@ class Coluna3(ctk.CTkFrame):
         # linha_historico.grid(row=1, column=0, padx=6, pady=6, sticky="nsew")
         # linha_historico._scrollbar.grid_remove()
 
+        ultimas_vendas = get_ultimas_vendas(SessaoDeLogin.loja_cod)
 
         linha_historico = ctk.CTkFrame(linha1)
         linha_historico.grid(row=1, column=0, padx=6, pady=6)

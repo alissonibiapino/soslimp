@@ -94,10 +94,9 @@ def insert_novo_produto(cod_categoria, nome_produto, descricao, marca, preco_uni
 
 def get_ultimas_vendas(cod_loja):
     try:
-        print(cod_loja)
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("SELECT cod_venda, INITCAP(forma_pagamento.tipo_pagamento), hora_do_registro, valor_total FROM registro_pedido rp INNER JOIN forma_pagamento USING (cod_forma_pag) WHERE DATE(hora_do_registro) = CURRENT_DATE AND cod_loja = %s ORDER BY hora_do_registro DESC;", (1,))
+        cur.execute("SELECT cod_venda, INITCAP(forma_pagamento.tipo_pagamento), hora_do_registro, valor_total FROM registro_pedido rp INNER JOIN forma_pagamento USING (cod_forma_pag) WHERE DATE(hora_do_registro) = CURRENT_DATE AND cod_loja = %s ORDER BY hora_do_registro DESC;", (cod_loja,))
         conn.commit()
         resultado = cur.fetchall()
         conn.close()
@@ -220,7 +219,6 @@ def login(usuario, senha, loja):
             SessaoDeLogin.nome = resultado[0][1]
             SessaoDeLogin.cargo = resultado[0][2]
             SessaoDeLogin.loja_cod = loja
-            print(type(loja))
             cur.execute("SELECT nome_loja, endereco, telefone, email FROM loja WHERE cod_loja = %s;", (loja,))
             resultado2 = cur.fetchone()
             SessaoDeLogin.loja_nome = resultado2[0]

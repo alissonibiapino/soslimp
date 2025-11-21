@@ -18,17 +18,16 @@ class Home(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=1, minsize=350)
 
         self.grid_columnconfigure(2)
-        self.grid_columnconfigure(1, weight=1, minsize=350)
+        self.grid_columnconfigure(2, weight=1, minsize=350)
 
         self.grid_rowconfigure(0, weight=1)
 
         # Jogando as views no App
-        col1 = Coluna1(self, master)
-        col1.grid(row=0, column=0, padx=10, sticky="nsew")
-
         col2 = Coluna2(self)
         col2.grid(row=0, column=1, padx=10, sticky="nsew")
 
         col3 = Coluna3(self)
         col3.grid(row=0, column=2, padx=10, sticky="nsew")
-        
+
+        col1 = Coluna1(self, master, col2, col3)
+        col1.grid(row=0, column=0, padx=10, sticky="nsew")
