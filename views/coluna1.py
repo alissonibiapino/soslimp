@@ -118,7 +118,6 @@ class Coluna1(ctk.CTkFrame):
         
         linha2.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
         linha2.grid_columnconfigure(0, weight=1)
-        linha2.grid_rowconfigure(0, weight=1)
 
         label_linha2_valor = ctk.CTkLabel (
             linha2,
@@ -127,10 +126,10 @@ class Coluna1(ctk.CTkFrame):
         )
         label_linha2_valor.grid(row=0, column=0, pady=(15, 10), padx=20, sticky='nw')
 
-        select_categoria = ctk.CTkOptionMenu(linha2, values=list(categorias.keys()), variable=categoria_selecionada, command=atualizar_produtos)
+        select_categoria = ctk.CTkOptionMenu(linha2, values=list(categorias.keys()), variable=categoria_selecionada, command=atualizar_produtos, height=40)
         select_categoria.grid(row=1, column=0, padx=20, sticky='nsew')
 
-        select_produto = ctk.CTkOptionMenu(linha2, values=["Produto"], state="disabled", variable=produto_selecionado, command=atualizar_preco)
+        select_produto = ctk.CTkOptionMenu(linha2, values=["Produto"], state="disabled", variable=produto_selecionado, command=atualizar_preco, height=40)
         select_produto.grid(row=2, column=0, padx=20, pady=10, sticky='nsew')
 
         entrada_quantidade = ctk.CTkEntry (
@@ -139,12 +138,13 @@ class Coluna1(ctk.CTkFrame):
                 state="disabled",
                 validate="key",
                 textvariable=produto_selecionado_quantidade,
-                validatecommand=vcmd
+                validatecommand=vcmd,
+                height=40
             )
         entrada_quantidade.grid(row=3, column=0, padx=20, pady=10, sticky='nsew')
         entrada_quantidade.bind("<KeyRelease>", atualizar_valor)
 
-        select_transacao = ctk.CTkOptionMenu(linha2, variable=transacao_selecionada, values=list(transacoes.values()), state="disabled")
+        select_transacao = ctk.CTkOptionMenu(linha2, variable=transacao_selecionada, values=list(transacoes.values()), state="disabled", height=40)
         select_transacao.grid(row=4, column=0, padx=20, sticky='nsew')
 
         label_resumo = ctk.CTkLabel (
@@ -152,7 +152,7 @@ class Coluna1(ctk.CTkFrame):
             text="Resumo da compra",
             font=fonts.FONTE_TITULO
         )
-        label_resumo.grid(row=6, column=0, padx=20, pady=(12, 0), sticky='nw')
+        label_resumo.grid(row=6, column=0, padx=20, pady=(12, 0), sticky='w')
 
         produto_nome = ctk.CTkLabel (label_resumo, text=f"{produto_selecionado.get()}", textvariable=(produto_selecionado), font=("Segoe UI Bold", 16))
         produto_nome.grid(row=7, column=0, padx=10, sticky="nw")
@@ -203,17 +203,17 @@ class Coluna1(ctk.CTkFrame):
 
 
         # Linha 3
-        linha3 = ctk.CTkFrame(
-            self,
-            corner_radius=10,
-            border_width=2,
-            border_color=colors.AZUL_SECUNDARIO)
+        # linha3 = ctk.CTkFrame(
+        #     self,
+        #     corner_radius=10,
+        #     border_width=2,
+        #     border_color=colors.AZUL_SECUNDARIO)
         
-        linha3.grid(row=2, column=0, sticky="nsew", padx=5, pady=5)
-        linha3.grid_columnconfigure(0, weight=1)
+        # linha3.grid(row=2, column=0, sticky="nsew", padx=5, pady=5)
+        # linha3.grid_columnconfigure(0, weight=1)
 
-        label_linha3_valor_caixa = ctk.CTkLabel (
-            linha3,
-            text=f"TROCO DISPONÍVEL EM CAIXA: R$ {float(caixa_atual[0][0]):.2f}".replace(".", ",")
-        )
-        label_linha3_valor_caixa.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        # label_linha3_valor_caixa = ctk.CTkLabel (
+        #     linha3,
+        #     text=f"TROCO DISPONÍVEL EM CAIXA: R$ {float(caixa_atual[0][0]):.2f}".replace(".", ",")
+        # )
+        # label_linha3_valor_caixa.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)

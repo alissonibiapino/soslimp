@@ -20,7 +20,7 @@ class App(ctk.CTk):
         fonts.iniciar_fontes()
 
         self.current_frame = None
-        self.show_produtos()
+        self.show_login()
     
     def show_login(self):
         if self.current_frame:

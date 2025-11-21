@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from PIL import Image
 
 # Cores
 from theme import colors, fonts
@@ -41,10 +42,27 @@ class Produtos(ctk.CTkFrame):
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
         col1.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
-        col1.grid_columnconfigure(0, weight=1)
+        col1.grid_columnconfigure(0, weight=1, minsize=200)
 
-        label_produtos = ctk.CTkLabel(col1, text="Produtos por categoria:", font=fonts.FONTE_TITULO)
-        label_produtos.grid(row=0, column=0, sticky="new", pady=20, padx=15)
+        col1_cabecalho = ctk.CTkFrame(col1)
+        col1_cabecalho.grid(row=0, column=0, sticky="w", padx=15, pady=5)
+        col1_cabecalho.grid_columnconfigure(0, weight=1)
+
+        voltar = ctk.CTkImage(
+            light_image=Image.open("assets/img/voltar.png"),
+            dark_image=Image.open("assets/img/voltar.png"),
+            size=(30, 20)
+        )
+        voltar_label = ctk.CTkLabel(col1_cabecalho, text="", image=voltar)
+        voltar_label.grid(row=0, column=0, pady=20, padx=5, sticky="w")
+        voltar_label.bind("<Button-1>", lambda e: self.master.show_home())
+        # voltar_label("<Button-1>", self.master.show_home())
+
+        label_produtos = ctk.CTkLabel(col1_cabecalho, text="Produtos por categoria:", font=fonts.FONTE_TITULO)
+        label_produtos.grid(row=0, column=1, pady=20, padx=15, sticky="w")
+
+        # label_produtos_equilibrador = ctk.CTkLabel(col1_cabecalho, text="")
+        # label_produtos_equilibrador.grid(row=0, column=2, pady=20, padx=15, sticky="e")
 
         for index, categoria in enumerate(self.categorias):
             btn_categoria = ctk.CTkButton(col1, text=categoria, height=50, command=lambda t=categoria: atualizar_produtos(t))
@@ -74,7 +92,7 @@ class Produtos(ctk.CTkFrame):
             label_produto_marca = ctk.CTkLabel(frame_produto, text=dados_produto['marca'], fg_color=colors.AZUL_SECUNDARIO, text_color="#fafafa", padx=10, pady=5, corner_radius=2)
             label_produto_marca.grid(row=0, column=1, sticky="e")
 
-            label_produto_preco = ctk.CTkLabel(frame_produto, text=dados_produto['preco'], fg_color="#8C8C8C", text_color="#fafafa", padx=10, pady=5, corner_radius=2)
+            label_produto_preco = ctk.CTkLabel(frame_produto, text=f"R$ {dados_produto['preco']}", fg_color="#8C8C8C", text_color="#fafafa", padx=10, pady=5, corner_radius=2)
             label_produto_preco.grid(row=0, column=2, sticky="e", padx=10)
 
     

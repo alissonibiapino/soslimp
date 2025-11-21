@@ -1,4 +1,7 @@
 import customtkinter as ctk
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from collections import Counter
 
 from sessao import SessaoDeLogin
 from theme import fonts
@@ -89,3 +92,29 @@ class Coluna2(ctk.CTkFrame):
             border_color=colors.AZUL_SECUNDARIO)
         
         linha3.grid(row=2, column=0, sticky="new", padx=5, pady=5)
+        linha3.grid_rowconfigure(0, weight=1)
+        linha3.grid_columnconfigure(0, weight=1)
+
+
+        ultimas_vendas = get_ultimas_vendas(SessaoDeLogin.loja_cod)
+
+        horas = [dados["data"].hour for dados in ultimas_vendas.values()]
+        contagem = Counter(horas)
+
+        horas_ordenadas = sorted(contagem.keys())
+        quantidade = [contagem[h] for h in horas_ordenadas]
+
+        fig, ax = plt.subplots(figsize=(5, 3), dpi=100)
+        ax.bar(horas_ordenadas, quantidade)
+        ax.set_title("Vendas por horário")
+        # ax.set_xlabel("Hora do dia")
+        ax.set_ylabel("Quantidade")
+        ax.set_xticks(horas_ordenadas)
+
+        plt.tight_layout()
+
+        canvas = FigureCanvasTkAgg(fig, master=linha3)
+        canvas_widget = canvas.get_tk_widget()
+        canvas_widget.pack(fill="both", expand=True, padx=10, pady=10)
+
+        canvas.draw()

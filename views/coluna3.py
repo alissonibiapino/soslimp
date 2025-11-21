@@ -6,11 +6,11 @@ from database.queries import get_ultimas_vendas
 from sessao import SessaoDeLogin
 from theme import colors
 
-def editar_entrada():
-    print('Clicou em editar')
+# def editar_entrada():
+#     print('Clicou em editar')
 
-def excluir_entrada():
-    print('Clicou em excluir')
+# def excluir_entrada():
+#     print('Clicou em excluir')
 
 class Coluna3(ctk.CTkFrame):
     def __init__(self, parent):
@@ -25,24 +25,24 @@ class Coluna3(ctk.CTkFrame):
         self.carregar_coluna3()
 
     def carregar_coluna3(self):
-        linha1 = ctk.CTkFrame(
-            self,
-            corner_radius=10,
-            border_width=2,
-            border_color=colors.AZUL_SECUNDARIO,
-            height=80
-        )        
-        linha1.grid(row=0, column=0, sticky="new", padx=5, pady=5)
+        # linha1 = ctk.CTkFrame(
+        #     self,
+        #     corner_radius=10,
+        #     border_width=2,
+        #     border_color=colors.AZUL_SECUNDARIO,
+        #     height=80
+        # )        
+        # linha1.grid(row=0, column=0, sticky="new", padx=5, pady=5)
 
-        ir_dashboard = ctk.CTkButton(self, text="Ir para dashboard", font=("", 20))
-        ir_dashboard.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        # ir_dashboard = ctk.CTkButton(self, text="Ir para dashboard", font=("", 20))
+        # ir_dashboard.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
         linha2 = ctk.CTkFrame(
             self,
             corner_radius=10,
             border_width=2,
             border_color=colors.AZUL_SECUNDARIO)
-        linha2.grid(row=1, column=0, padx=5, pady=5, sticky="nsew")
+        linha2.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
         linha2.grid_columnconfigure(0, weight=1)
         linha2.grid_rowconfigure(0, weight=1)
 
@@ -114,35 +114,35 @@ class Coluna3(ctk.CTkFrame):
                 size=(12, 12)
             )
 
-            editar_label_btn = ctk.CTkButton (
-                master=coluna_tipo_pagamento,
-                text="",
-                image=editar_icon,
-                fg_color="#FFFFFF",
-                width=12,
-                hover_color="#FAFAFA",
-                hover=True,
-                command=editar_entrada
-            )
-            editar_label_btn.grid(row=0, column=2, pady=0, sticky="n")
+            # editar_label_btn = ctk.CTkButton (
+            #     master=coluna_tipo_pagamento,
+            #     text="",
+            #     image=editar_icon,
+            #     fg_color="#FFFFFF",
+            #     width=12,
+            #     hover_color="#FAFAFA",
+            #     hover=True,
+            #     command=editar_entrada
+            # )
+            # editar_label_btn.grid(row=0, column=2, pady=0, sticky="n")
 
-            excluir_icon = ctk.CTkImage(
-                light_image = Image.open("assets/img/excluir.png"),
-                dark_image = Image.open("assets/img/excluir.png"),
-                size=(12, 12)
-            )
+            # excluir_icon = ctk.CTkImage(
+            #     light_image = Image.open("assets/img/excluir.png"),
+            #     dark_image = Image.open("assets/img/excluir.png"),
+            #     size=(12, 12)
+            # )
 
-            excluir_label_btn = ctk.CTkButton (
-                master=coluna_tipo_pagamento,
-                text="",
-                image=excluir_icon,
-                fg_color="#FFFFFF",
-                width=12,
-                hover_color="#FAFAFA",
-                hover=True,
-                command=excluir_entrada
-            )
-            excluir_label_btn.grid(row=0, column=3, pady=0, sticky="n")
+            # excluir_label_btn = ctk.CTkButton (
+            #     master=coluna_tipo_pagamento,
+            #     text="",
+            #     image=excluir_icon,
+            #     fg_color="#FFFFFF",
+            #     width=12,
+            #     hover_color="#FAFAFA",
+            #     hover=True,
+            #     command=excluir_entrada
+            # )
+            # excluir_label_btn.grid(row=0, column=3, pady=0, sticky="n")
 
 
             # excluir_label = ctk.CTkLabel(coluna_tipo_pagamento, text="", image=excluir_icon)

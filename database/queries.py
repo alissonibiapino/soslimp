@@ -106,6 +106,8 @@ def get_ultimas_vendas(cod_loja):
             for id_reg_venda, tipo_pagamento, data_reg_venda, preco_unitario in resultado
         }
 
+        print(ultimas_vendas_dict)
+
         return ultimas_vendas_dict
     except Exception as err:
         print("Erro: ", err)
