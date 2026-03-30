@@ -1,0 +1,122 @@
+/* Estilização global */
+
+
+:root {
+    /* Cores */
+    --cor-background: #fafafa;
+    --cor-branco: #ffffff;
+    --cor-borda: #eef0f4;
+
+    --cor-texto-primario: #212121;
+    --cor-texto-secundario: #7C7C7C;
+
+    --cor-cinza: #EEEEEE;
+
+    --cor-azul-principal: #153B9E;
+    --cor-azul-secundario: #5279DF;
+    --cor-azul-terciario: #DDE6FF;
+
+    --cor-cuidado: #e03131;
+    --cor-sucesso: #2f9e44;
+
+    /* Fontes */
+    --fonte-poppins-light: 'Poppins', sans-serif;
+}
+
+
+/* Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: var(--fonte-poppins-light);
+    background: var(--cor-background);
+    color: var(--cor-texto-primario);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+}
+
+/* Menu */
+.menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 999;
+    gap: 8px;
+}
+
+.menu__esquerdo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.menu__info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--cor-texto-secundario);
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 100px;
+    white-space: nowrap;
+    /* background: yellow; */
+    background: var(--cor-branco);
+}
+
+
+/* Menu ícones */
+.btn-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 100%;
+    color: var(cor-cinza);
+    transition: background .15s, color .15s;
+    background: var(--cor-branco);
+}
+
+.btn-icon:hover {
+    background: var(--cor-borda);
+    color: var(--cor-texto-primario);
+}
+
+.btn-fechar-caixa {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    letter-spacing: .06em;
+    border-radius: 100px;
+    padding: 6px 14px;
+    transition: background .15s, color .15s;
+    background-color: var(--cor-branco);
+    color: var(--cor-cuidado);
+    border: 1.5px solid var(--cor-cuidado);
+}
+
+.btn-fechar-caixa:hover {
+    background: var(--cor-cuidado);
+    color: #fff;
+}
