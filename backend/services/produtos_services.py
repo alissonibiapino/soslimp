@@ -53,6 +53,32 @@ def buscar_produto(produto_id: int):
         cur.close()
         conn.close()
 
+def listar_categorias():
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:            
+        cur.execute("""
+            SELECT	
+	            c.cod_categoria,
+	            c.categoria_produto,
+	            COUNT (p.cod_produto) AS total_produtos
+            FROM categoria c
+            INNER JOIN produto p USING (cod_categoria)
+            GROUP BY c.cod_categoria, c.categoria_produto
+            ORDER BY total_produtos DESC;
+            """)
+        categorias = cur.fetchall()
+        return categorias
+
+    except Exception as e:
+        conn.rollback()
+        return print(f"Erro no banco: {e}")
+    
+    finally:
+        cur.close()
+        conn.close()
+
 def listar_produtos_por_categoria(categoria_id: int):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)

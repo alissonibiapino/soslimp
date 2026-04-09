@@ -6,7 +6,8 @@ from services.produtos_services import (
       buscar_produto,
       listar_produtos_por_categoria,
       cadastrar_novo_produto,
-      editar_produto
+      editar_produto,
+      listar_categorias
 )
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
@@ -18,6 +19,10 @@ router = APIRouter(prefix="/produtos", tags=["Produtos"])
 @router.get("/")
 def get_produtos():
     return listar_produtos()
+
+@router.get("/categorias")
+def get_categorias():
+     return listar_categorias()
 
 @router.get("/{produto_id}")
 def get_produto(produto_id: int):
