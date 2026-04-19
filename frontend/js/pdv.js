@@ -17,8 +17,6 @@ function exibirData() {
     document.getElementById('menu-data').textContent = dataExtenso;
 }
 
-exibirData();
-
 // Categorias
 async function carregarCategorias() {
     const nav = document.getElementById('categorias-nav')
@@ -55,4 +53,45 @@ async function carregarCategorias() {
     }
 }
 
+// Produtos
+async function carregarProduto() {
+    const produtos_grid = document.getElementById('produtos-grid')
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/produtos/categoria/2");
+        const produtos = await response.json()
+
+        console.log(produtos)
+
+        produtos.forEach(prod => {
+            console.log(prod.id)
+
+            const article = document.createElement('article');
+            article.className = 'produto-card';
+            article.dataset.id = prod.id;
+
+            article.innerHTML = `
+                <div class="produto-card__imagem_box">
+                    <img alt="${prod.nome}" class="produto-card__imagem" />
+                </div>
+                <div class="produto-card__corpo">
+                    <h3 class="produto-card__nome">${prod.nome}</h3>
+                    
+                    <span class="produto-card__preco">${prod.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                </div>
+            `;
+
+            article.addEventListener('click', () => console.log(prod))
+            produtos_grid.appendChild(article)
+        });
+
+    } catch (error) {
+        console.error("Erro nas categorias:", error)
+    }
+}
+
 document.addEventListener('DOMContentLoaded', carregarCategorias);
+
+
+exibirData();
+carregarProduto();
