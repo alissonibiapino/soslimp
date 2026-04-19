@@ -3,3 +3,4 @@ postgres_data/
 __pycache__/
 *.py[cod]
 *$py.class
+simular_vendas.py

@@ -1,5 +1,6 @@
 from database.conn_postgres import get_conn
 from psycopg2.extras import RealDictCursor
+from services.neo4j_services import registrar_novo_pedido_neo4j
 
 def listar_vendas_do_dia():
     conn = get_conn()
@@ -74,6 +75,8 @@ def registrar_novo_pedido(dados_do_pedido):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
+    print(dados_do_pedido)
+
     try:
         valor_total_venda = 0
         produtos_processados = []
@@ -81,23 +84,33 @@ def registrar_novo_pedido(dados_do_pedido):
         for produto in dados_do_pedido['produtos']:
             cur.execute("""
                         SELECT
-                            preco_unitario
+                            preco_unitario,
+                            nome_produto,
+                            marca
                         FROM produto
                         WHERE cod_produto = %s""",
                         (produto['cod_produto'],))
             prod_bd = cur.fetchone()
 
-            if not prod_bd:
-                return print(f"Produto {produto['cod_produto']} não encontrado!")
+            cur.execute("""
+                SELECT nome_fragrancia
+                FROM fragrancia
+                WHERE cod_fragrancia = %s
+            """, (produto['cod_fragrancia'],))
+            frag_bd = cur.fetchone()
             
             preco_atual = float(prod_bd['preco_unitario'])
             subtotal = preco_atual * produto['quantidade']
             valor_total_venda += subtotal
 
             produtos_processados.append({
-                'id': produto['cod_produto'],
+                'cod_produto': produto['cod_produto'],
+                'cod_fragrancia': produto['cod_fragrancia'],
                 'qtd': produto['quantidade'],
-                'preco': preco_atual
+                'preco': preco_atual,
+                'nome_produto': prod_bd['nome_produto'],
+                'marca': prod_bd['marca'],
+                'nome_fragrancia': frag_bd['nome_fragrancia']
             })
 
         cur.execute("""
@@ -116,11 +129,16 @@ def registrar_novo_pedido(dados_do_pedido):
 
         for ip in produtos_processados:
             cur.execute("""
-                INSERT INTO detalhes_pedido (cod_produto, quantidade, preco_unitario, cod_venda) 
-                VALUES (%s, %s, %s, %s)
-            """, (ip['id'], ip['qtd'], ip['preco'], cod_venda))
+                INSERT INTO detalhes_pedido (cod_produto, quantidade, preco_unitario, cod_venda, cod_fragrancia)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (ip['cod_produto'], ip['qtd'], ip['preco'], cod_venda, ip['cod_fragrancia']))
 
         conn.commit()
+
+        registrar_novo_pedido_neo4j(cod_venda, {
+            "produtos": produtos_processados
+        })
+
         return cod_venda
 
     except Exception as e:
