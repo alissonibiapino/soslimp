@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import produtos, vendas, caixa
+from routes import produtos, vendas, caixa, recomendacoes
 
 app = FastAPI(title="SOSLimp")
 
@@ -25,6 +25,7 @@ app.add_middleware(
 app.include_router(produtos.router)
 app.include_router(vendas.router)
 app.include_router(caixa.router)
+app.include_router(recomendacoes.router)
 
 @app.get('/')
 def root():
