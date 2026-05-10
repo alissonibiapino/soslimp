@@ -1,3 +1,6 @@
+// Variaveis
+let carrinho = [];
+
 // Funções do menu
 
 function exibirData() {
@@ -76,13 +79,13 @@ async function carregarProduto() {
                 </div>
                 <div class="produto-card__corpo">
                     <h3 class="produto-card__nome">${prod.nome}</h3>
-                    
                     <span class="produto-card__preco">${prod.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                 </div>
             `;
 
-            article.addEventListener('click', () => console.log(prod))
+            article.addEventListener('click', () => adicionarAoCarrinho(prod));
             produtos_grid.appendChild(article)
+
         });
 
     } catch (error) {
@@ -90,8 +93,66 @@ async function carregarProduto() {
     }
 }
 
+function atualizarCarrinhoHTML() {
+    const listaVenda = document.getElementById('venda-items');
+    listaVenda.innerHTML = '';
+
+    carrinho.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'venda-item';
+        li.dataset.id = item.id;
+
+        li.innerHTML = `
+            <div class="venda-item__qty">
+                <button class="qty-btn" onclick="alterarQuantidade(${item.id}, -1)">-</button>
+                <span class="qty-value">${item.quantidade}</span>
+                <button class="qty-btn" onclick="alterarQuantidade(${item.id}, 1)">+</button>
+            </div>
+            <div class="venda-item__info">
+                <span class="venda-item__nome">${item.nome}</span>
+                <div class="venda-item__tags">
+                    <span class="tag tag--blue">${item.marca}</span>
+                </div>
+            </div>
+            <span class="venda-item__preco">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
+        `;
+        listaVenda.appendChild(li);
+    });
+}
+
+function adicionarAoCarrinho(produto) {
+    const itemExistente = carrinho.find(item => item.id === produto.id);
+
+    if (itemExistente) {
+        itemExistente.quantidade += 1;
+    } else {
+        carrinho.push({
+            id: produto.id,
+            nome: produto.nome,
+            preco: produto.preco,
+            marca: produto.marca || 'SOSLimp',
+            quantidade: 1
+        });
+    }
+    atualizarCarrinhoHTML();
+}
+
+
+function alterarQuantidade(id, delta) {
+    const item = carrinho.find(item => item.id === id);
+    if (!item) return;
+
+    item.quantidade += delta;
+
+    if (item.quantidade <= 0) {
+        carrinho = carrinho.filter(i => i.id !== id);
+    }
+
+    atualizarCarrinhoHTML();
+}
+
+
+
 document.addEventListener('DOMContentLoaded', carregarCategorias);
-
-
 exibirData();
 carregarProduto();
