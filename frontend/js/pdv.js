@@ -1,5 +1,6 @@
 // Variaveis
 let carrinho = [];
+let metodoPagamento = 'pix';
 
 // Funções do menu
 
@@ -28,8 +29,6 @@ async function carregarCategorias() {
         const response = await fetch("http://127.0.0.1:8000/produtos/categorias");
         const categorias = await response.json()
 
-        console.log(categorias)
-
         categorias.forEach(cat => {
             const button = document.createElement('button');
             button.className = 'categoria-card';
@@ -46,7 +45,6 @@ async function carregarCategorias() {
             `;
 
             button.addEventListener('click', () => {
-                console.log(`Filtrando categoria: ${cat.categoria_produto}, com o ID ${cat.cod_categoria}`)
                 document.querySelectorAll('.categoria-card').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
                 carregarProdutos(cat.cod_categoria);
@@ -85,13 +83,12 @@ async function carregarProdutos(categoriaId = null) {
         const produtos = await response.json()
 
         produtos.forEach(prod => {
-            console.log(prod)
             const article = document.createElement('article');
             article.className = 'produto-card';
 
             article.innerHTML = `
                 <div class="produto-card__imagem_box">
-                    <img alt="${prod.nome_produto}" class="produto-card__imagem" />
+                    <img class="produto-card__imagem" />
                 </div>
                 <div class="produto-card__corpo">
                     <h3 class="produto-card__nome">${prod.nome_produto}</h3>
@@ -119,8 +116,6 @@ function atualizarCarrinhoHTML() {
         li.className = 'venda-item';
         li.dataset.id = item.id;
 
-        console.log(item)
-
         li.innerHTML = `
             <div class="venda-item__qty">
                 <button class="qty-btn" onclick="alterarQuantidade('${item.id}', -1)">-</button>
@@ -137,6 +132,7 @@ function atualizarCarrinhoHTML() {
         `;
         listaVenda.appendChild(li);
     });
+    atualizarTotais();
 }
 
 function adicionarAoCarrinho(produto) {
@@ -155,6 +151,7 @@ function adicionarAoCarrinho(produto) {
     }
     atualizarCarrinhoHTML();
     buscarRecomendacoes()
+    atualizarTotais();
 }
 
 function alterarQuantidade(id, delta) {
@@ -169,6 +166,7 @@ function alterarQuantidade(id, delta) {
 
     atualizarCarrinhoHTML();
     buscarRecomendacoes();
+    atualizarTotais();
 }
 
 async function buscarRecomendacoes() {
@@ -221,6 +219,58 @@ async function carregarRecomendacoes(produtosCompletos) {
     });
 }
 
+function atualizarTotais() {
+    const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+    const desconto = 0;
+    const total = subtotal - desconto;
+
+    const formatar = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    
+    document.getElementById('subtotal').textContent = formatar(subtotal);
+    document.getElementById('total').textContent = formatar(total);
+    document.getElementById('desconto').textContent = formatar(desconto);
+
+    const btnRegistrar = document.getElementById('btn-registrar-venda');
+    const btnLimpar = document.getElementById('btn-limpar-venda');
+    btnRegistrar.disabled = (carrinho.length === 0 || !metodoPagamento);
+    btnLimpar.disabled = (carrinho.length === 0 || !metodoPagamento);
+
+}
+document.querySelectorAll('.metodo-pagamento').forEach(botao => {
+    botao.addEventListener('click', () => {
+        document.querySelectorAll('.metodo-pagamento').forEach(b => {
+            b.classList.remove('metodo-pagamento--ativo');
+        });
+
+        botao.classList.add('metodo-pagamento--ativo');
+
+        metodoPagamento = botao.dataset.method;
+        atualizarTotais();
+    });
+});
+
+document.getElementById('btn-limpar-venda').addEventListener('click', () => {
+    if (confirm("Deseja realmente limpar toda a venda?")) {
+        carrinho = [];
+        atualizarCarrinhoHTML();
+        atualizarTotais();
+        document.querySelectorAll('.metodo-pagamento').forEach(b => {
+            b.classList.remove('metodo-pagamento--ativo');
+        });
+        if(typeof buscarRecomendacoes === "function") buscarRecomendacoes();
+    }
+});
+
+document.getElementById('btn-registrar-venda').addEventListener('click', () => {
+    if (confirm("Deseja confirmar a venda?")) {
+        realizarVenda()
+    }
+});
+
+
+
+
 document.addEventListener('DOMContentLoaded', carregarCategorias);
 exibirData();
 carregarProdutos();
+atualizarTotais();
