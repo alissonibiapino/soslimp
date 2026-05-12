@@ -33,7 +33,7 @@ async function carregarCategorias() {
         categorias.forEach(cat => {
             const button = document.createElement('button');
             button.className = 'categoria-card';
-            button.dataset.category = cat.id;
+            button.dataset.category = cat.cod_categoria;
 
             button.innerHTML = `
                 <div class="categoria-card__icone">
@@ -47,39 +47,55 @@ async function carregarCategorias() {
 
             button.addEventListener('click', () => {
                 console.log(`Filtrando categoria: ${cat.categoria_produto}, com o ID ${cat.cod_categoria}`)
+                document.querySelectorAll('.categoria-card').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                carregarProdutos(cat.cod_categoria);
             })
-
+            
             nav.appendChild(button);
         });
+
+        const btnTodas = document.querySelector('[data-category="todas"]');
+        btnTodas.addEventListener('click', () => {
+            document.querySelectorAll('.categoria-card').forEach(btn => btn.classList.remove('active'));
+            btnTodas.classList.add('active');
+            
+            carregarProdutos();
+        });
+        
     } catch (error) {
         console.error("Erro nas categorias:", error)
     }
 }
 
 // Produtos
-async function carregarProduto() {
+async function carregarProdutos(categoriaId = null) {
     const produtos_grid = document.getElementById('produtos-grid')
+    produtos_grid.innerHTML = ''
+
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/produtos/categoria/2");
+        let url = "http://127.0.0.1:8000/produtos"; 
+
+        if (categoriaId) {
+            url = `http://127.0.0.1:8000/produtos/categoria/${categoriaId}`;
+        }
+
+        const response = await fetch(url);
         const produtos = await response.json()
 
-        console.log(produtos)
-
         produtos.forEach(prod => {
-            console.log(prod.id)
-
+            console.log(prod)
             const article = document.createElement('article');
             article.className = 'produto-card';
-            article.dataset.id = prod.id;
 
             article.innerHTML = `
                 <div class="produto-card__imagem_box">
-                    <img alt="${prod.nome}" class="produto-card__imagem" />
+                    <img alt="${prod.nome_produto}" class="produto-card__imagem" />
                 </div>
                 <div class="produto-card__corpo">
-                    <h3 class="produto-card__nome">${prod.nome}</h3>
-                    <span class="produto-card__preco">${prod.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                    <h3 class="produto-card__nome">${prod.nome_produto}</h3>
+                    <span class="produto-card__preco">${prod.preco_unitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                 </div>
             `;
 
@@ -90,6 +106,7 @@ async function carregarProduto() {
 
     } catch (error) {
         console.error("Erro nas categorias:", error)
+        produtos_grid.innerHTML = '<p>Erro ao carregar produtos.</p>';
     }
 }
 
@@ -102,9 +119,11 @@ function atualizarCarrinhoHTML() {
         li.className = 'venda-item';
         li.dataset.id = item.id;
 
+        console.log(item)
+
         li.innerHTML = `
             <div class="venda-item__qty">
-                <button class="qty-btn" onclick="alterarQuantidade(${item.id}, -1)">-</button>
+                <button class="qty-btn" onclick="alterarQuantidade('${item.id}', -1)">-</button>
                 <span class="qty-value">${item.quantidade}</span>
                 <button class="qty-btn" onclick="alterarQuantidade(${item.id}, 1)">+</button>
             </div>
@@ -121,15 +140,15 @@ function atualizarCarrinhoHTML() {
 }
 
 function adicionarAoCarrinho(produto) {
-    const itemExistente = carrinho.find(item => item.id === produto.id);
+const itemExistente = carrinho.find(item => item.id === produto.cod_produto);
 
     if (itemExistente) {
         itemExistente.quantidade += 1;
     } else {
         carrinho.push({
-            id: produto.id,
-            nome: produto.nome,
-            preco: produto.preco,
+            id: produto.cod_produto,
+            nome: produto.nome_produto,
+            preco: produto.preco_unitario,
             marca: produto.marca || 'SOSLimp',
             quantidade: 1
         });
@@ -139,13 +158,13 @@ function adicionarAoCarrinho(produto) {
 
 
 function alterarQuantidade(id, delta) {
-    const item = carrinho.find(item => item.id === id);
+    const item = carrinho.find(item => Number(item.id) === Number(id));
     if (!item) return;
 
     item.quantidade += delta;
 
     if (item.quantidade <= 0) {
-        carrinho = carrinho.filter(i => i.id !== id);
+        carrinho = carrinho.filter(i => Number(i.id) !== Number(id));
     }
 
     atualizarCarrinhoHTML();
@@ -155,4 +174,4 @@ function alterarQuantidade(id, delta) {
 
 document.addEventListener('DOMContentLoaded', carregarCategorias);
 exibirData();
-carregarProduto();
+carregarProdutos();

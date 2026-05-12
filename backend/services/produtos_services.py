@@ -86,10 +86,10 @@ def listar_produtos_por_categoria(categoria_id: int):
     try:            
         cur.execute("""
             SELECT 
-                p.cod_produto AS id,
-                p.nome_produto AS nome,
+                p.cod_produto,
+                p.nome_produto,
                 p.marca,
-                p.preco_unitario AS preco
+                p.preco_unitario
             FROM produto p
             JOIN categoria c
                 ON p.cod_categoria = c.cod_categoria
