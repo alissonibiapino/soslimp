@@ -51,7 +51,7 @@ def recomendar_produtos_carrinho(produtos_carrinho: list):
             p2.nome AS nome,
             (peso_venda + peso_fragrancia) AS score
         ORDER BY score DESC
-        LIMIT 5
+        LIMIT 3
     """
     with session:
         result = session.run(cypher, ids_carrinho=produtos_carrinho)

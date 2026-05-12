@@ -1,5 +1,6 @@
 from database.conn_postgres import get_conn
 from psycopg2.extras import RealDictCursor
+from .recomendacoes_services import recomendar_produtos_carrinho
 
 def listar_produtos():
     conn = get_conn()
@@ -176,3 +177,49 @@ def editar_produto(cod_produto, dados_novos):
         cur.close()
         conn.close()
 
+
+def listar_produtos_recomendados(produtos_carrinho: list):
+    sugestoes_neo4j = recomendar_produtos_carrinho(produtos_carrinho)
+    ids_recomendados = [item['id'] for item in sugestoes_neo4j]
+
+    if not ids_recomendados:
+        return []
+
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+
+    try:
+        query = """
+            SELECT p.*, c.categoria_produto 
+            FROM produto p
+            JOIN categoria c ON p.cod_categoria = c.cod_categoria
+            WHERE p.cod_produto = ANY(%s)
+        """
+        cur.execute(query, (ids_recomendados,))
+        produtos_completos = cur.fetchall()
+        return produtos_completos
+    finally:
+        cur.close()
+        conn.close()
+
+    # try:
+    #     cur.execute("""
+    #         SELECT 
+    #             cod_produto AS id,
+    #             nome_produto AS nome,
+    #             marca,
+    #             preco_unitario AS preco
+    #         FROM produto
+    #         WHERE cod_produto = %s
+    #     """, (produto_id,))
+    #     produto = cur.fetchone()
+    #     return produto
+    
+    # except Exception as e:
+    #     conn.rollback()
+    #     return print(f"Erro no banco: {e}")
+    
+    # finally:
+    #     cur.close()
+    #     conn.close()

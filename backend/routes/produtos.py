@@ -7,7 +7,8 @@ from services.produtos_services import (
       listar_produtos_por_categoria,
       cadastrar_novo_produto,
       editar_produto,
-      listar_categorias
+      listar_categorias,
+      listar_produtos_recomendados
 )
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
@@ -55,3 +56,8 @@ def put_atualizar_produto(cod_produto: int, dados: dict = Body(...)):
 
       except Exception as e:
             return print(f"Erro no banco: {e}")
+      
+@router.post("/produtos_recomendados")
+def get_produtos_recomendados(carrinho: dict):
+     produtos_carrinho = carrinho.get("cods", [])
+     return listar_produtos_recomendados(produtos_carrinho)

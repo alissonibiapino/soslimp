@@ -51,7 +51,7 @@ async function carregarCategorias() {
                 button.classList.add('active');
                 carregarProdutos(cat.cod_categoria);
             })
-            
+
             nav.appendChild(button);
         });
 
@@ -59,10 +59,10 @@ async function carregarCategorias() {
         btnTodas.addEventListener('click', () => {
             document.querySelectorAll('.categoria-card').forEach(btn => btn.classList.remove('active'));
             btnTodas.classList.add('active');
-            
+
             carregarProdutos();
         });
-        
+
     } catch (error) {
         console.error("Erro nas categorias:", error)
     }
@@ -75,7 +75,7 @@ async function carregarProdutos(categoriaId = null) {
 
 
     try {
-        let url = "http://127.0.0.1:8000/produtos"; 
+        let url = "http://127.0.0.1:8000/produtos";
 
         if (categoriaId) {
             url = `http://127.0.0.1:8000/produtos/categoria/${categoriaId}`;
@@ -140,7 +140,7 @@ function atualizarCarrinhoHTML() {
 }
 
 function adicionarAoCarrinho(produto) {
-const itemExistente = carrinho.find(item => item.id === produto.cod_produto);
+    const itemExistente = carrinho.find(item => item.id === produto.cod_produto);
 
     if (itemExistente) {
         itemExistente.quantidade += 1;
@@ -154,8 +154,8 @@ const itemExistente = carrinho.find(item => item.id === produto.cod_produto);
         });
     }
     atualizarCarrinhoHTML();
+    buscarRecomendacoes()
 }
-
 
 function alterarQuantidade(id, delta) {
     const item = carrinho.find(item => Number(item.id) === Number(id));
@@ -168,9 +168,58 @@ function alterarQuantidade(id, delta) {
     }
 
     atualizarCarrinhoHTML();
+    buscarRecomendacoes();
 }
 
+async function buscarRecomendacoes() {
+    if (carrinho.length === 0) {
+        document.getElementById('comprado-junto__lista').innerHTML = 'Nenhum produto selecionado.';
+        return;
+    }
 
+    const cods = carrinho.map(produto => produto.id)
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/produtos/produtos_recomendados", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cods: cods })
+        });
+
+        const produtosCompletos = await response.json();
+        if (produtosCompletos.length === 0) {
+            document.getElementById('comprado-junto__lista').innerHTML = '<span>Esse produto ainda não possui recomendações.</span>';
+        } else {
+            carregarRecomendacoes(produtosCompletos);
+        }
+    } catch (error) {
+        console.log("Erro:", error);
+    }
+
+}
+
+async function carregarRecomendacoes(produtosCompletos) {
+    const recomendacao_lista = document.getElementById('comprado-junto__lista')
+    recomendacao_lista.innerHTML = ''
+
+    produtosCompletos.forEach(prod => {
+        const article = document.createElement('li');
+        article.className = 'comprado-junto__item';
+
+        article.innerHTML = `
+            <div class="comprado-junto__item__info">
+                <span class="comprado-junto__item__nome">${prod.nome_produto}</span>
+                <div class="comprado-junto__item__tags">
+                    <span class="comprado-junto__item_marca">${prod.marca}</span>
+                </div>
+            </div>
+            <span class="comprado-junto__item__preco">${prod.preco_unitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+        `;
+
+        article.addEventListener('click', () => adicionarAoCarrinho(prod));
+        recomendacao_lista.appendChild(article)
+    });
+}
 
 document.addEventListener('DOMContentLoaded', carregarCategorias);
 exibirData();

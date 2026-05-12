@@ -422,13 +422,14 @@ button {
 }
 
 .venda-item__nome {
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 500;
     line-height: 1.3;
     margin-bottom: 4px;
 }
 
 .venda-item__tags {
+    font-size: 12px;
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -442,3 +443,72 @@ button {
     flex-shrink: 0;
 }
 
+.categoria-card.active {
+    border: 1px solid var(--cor-azul-secundario);
+    background-color: var(--cor-azul-terciario);
+}
+
+
+
+
+
+
+/* Estilização do coisa de recomendação */
+.comprado-junto {
+    padding: 20px 20px 0;
+    flex-shrink: 0;
+}
+
+.comprado-junto__lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.comprado-junto__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--cor-borda);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+
+.comprado-junto__item:hover {
+    border-color: var(--cor-azul-principal);
+    background: var(--cor-azul-terciario);
+}
+
+.comprado-junto__item__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.comprado-junto__item__nome {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.comprado-junto__item__tags {
+    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.comprado-junto__item_marca {
+    width: 100%;
+}
+
+.comprado-junto__item__preco {
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
