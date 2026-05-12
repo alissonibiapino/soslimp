@@ -1,6 +1,6 @@
 from database.conn_neo4j import get_neo4j_session
 
-def recomendar_produtos(cod_produto: int):
+def recomendar_produto(cod_produto: int):
     session = get_neo4j_session()
 
     cypher = """
@@ -28,3 +28,32 @@ def recomendar_produtos(cod_produto: int):
     with session:
         result = session.run(cypher, {"cod_produto": cod_produto})
         return [record.data() for record in result]
+
+
+def recomendar_produtos_carrinho(produtos_carrinho: list):
+    session = get_neo4j_session()
+
+    cypher = """
+        MATCH (p:Produto)
+        WHERE p.cod_produto IN $ids_carrinho
+
+        MATCH (p1)<-[:CONTEM]-(v:Venda)-[:CONTEM]->(p2:Produto)
+        WHERE NOT p2.cod_produto IN $ids_carrinho
+
+        OPTIONAL MATCH (p1)-[:TEM_FRAGRANCIA]->(f:Fragrancia)<-[:TEM_FRAGRANCIA]-(p2)
+
+        WITH p2, 
+             count(DISTINCT v) * 10 AS peso_venda, 
+             count(DISTINCT f) * 2 AS peso_fragrancia
+
+        RETURN 
+            p2.cod_produto AS id,
+            p2.nome AS nome,
+            (peso_venda + peso_fragrancia) AS score
+        ORDER BY score DESC
+        LIMIT 5
+    """
+    with session:
+        result = session.run(cypher, ids_carrinho=produtos_carrinho)
+        return [record.data() for record in result]
+
