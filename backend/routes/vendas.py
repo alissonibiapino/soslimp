@@ -24,6 +24,7 @@ def get_pedidos_do_dia():
 
 @router.post("/novo_pedido")
 def post_registrar_novo_pedido(dados_do_pedido: dict = Body(...)):
+     print(dados_do_pedido)
      id_gerado = registrar_novo_pedido(dados_do_pedido)
 
      return {

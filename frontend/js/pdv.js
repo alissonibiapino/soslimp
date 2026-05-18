@@ -1,6 +1,6 @@
 // Variaveis
 let carrinho = [];
-let metodoPagamento = 'pix';
+let metodoPagamento = 1;
 
 // Funções do menu
 
@@ -114,13 +114,13 @@ function atualizarCarrinhoHTML() {
     carrinho.forEach(item => {
         const li = document.createElement('li');
         li.className = 'venda-item';
-        li.dataset.id = item.id;
+        li.dataset.id = item.cod_produto;
 
         li.innerHTML = `
             <div class="venda-item__qty">
-                <button class="qty-btn" onclick="alterarQuantidade('${item.id}', -1)">-</button>
+                <button class="qty-btn" onclick="alterarQuantidade(${item.cod_produto}, -1)">-</button>
                 <span class="qty-value">${item.quantidade}</span>
-                <button class="qty-btn" onclick="alterarQuantidade(${item.id}, 1)">+</button>
+                <button class="qty-btn" onclick="alterarQuantidade(${item.cod_produto}, 1)">+</button>
             </div>
             <div class="venda-item__info">
                 <span class="venda-item__nome">${item.nome}</span>
@@ -136,17 +136,18 @@ function atualizarCarrinhoHTML() {
 }
 
 function adicionarAoCarrinho(produto) {
-    const itemExistente = carrinho.find(item => item.id === produto.cod_produto);
+    const itemExistente = carrinho.find(item => item.cod_produto === produto.cod_produto);
 
     if (itemExistente) {
         itemExistente.quantidade += 1;
     } else {
         carrinho.push({
-            id: produto.cod_produto,
+            cod_produto: produto.cod_produto,
             nome: produto.nome_produto,
             preco: produto.preco_unitario,
             marca: produto.marca || 'SOSLimp',
-            quantidade: 1
+            quantidade: 1,
+            cod_fragrancia: 18
         });
     }
     atualizarCarrinhoHTML();
@@ -155,13 +156,13 @@ function adicionarAoCarrinho(produto) {
 }
 
 function alterarQuantidade(id, delta) {
-    const item = carrinho.find(item => Number(item.id) === Number(id));
+    const item = carrinho.find(item => Number(item.cod_produto) === Number(id));
     if (!item) return;
 
     item.quantidade += delta;
 
     if (item.quantidade <= 0) {
-        carrinho = carrinho.filter(i => Number(i.id) !== Number(id));
+        carrinho = carrinho.filter(i => Number(i.cod_produto) !== Number(id));
     }
 
     atualizarCarrinhoHTML();
@@ -175,7 +176,7 @@ async function buscarRecomendacoes() {
         return;
     }
 
-    const cods = carrinho.map(produto => produto.id)
+    const cods = carrinho.map(produto => produto.cod_produto)
 
     try {
         const response = await fetch("http://127.0.0.1:8000/produtos/produtos_recomendados", {
@@ -236,6 +237,7 @@ function atualizarTotais() {
     btnLimpar.disabled = (carrinho.length === 0 || !metodoPagamento);
 
 }
+
 document.querySelectorAll('.metodo-pagamento').forEach(botao => {
     botao.addEventListener('click', () => {
         document.querySelectorAll('.metodo-pagamento').forEach(b => {
@@ -261,12 +263,11 @@ document.getElementById('btn-limpar-venda').addEventListener('click', () => {
     }
 });
 
-document.getElementById('btn-registrar-venda').addEventListener('click', () => {
-    if (confirm("Deseja confirmar a venda?")) {
-        realizarVenda()
-    }
-});
-
+// document.getElementById('btn-registrar-venda').addEventListener('click', () => {
+//     if (confirm("Deseja confirmar a venda?")) {
+//         realizarVenda()
+//     }
+// });
 
 
 // Verificar login
@@ -307,7 +308,6 @@ function fazerLogout() {
     localStorage.removeItem('loja_nome');
     window.location.href = "login.html";
 }
-
 
 // Caixaaaaa
 async function verificarStatusCaixa() {
@@ -373,6 +373,38 @@ document.querySelector('.btn-fechar-caixa').addEventListener('click', async () =
         return
     }
 });
+
+// Finalizar compra
+document.getElementById('btn-registrar-venda').addEventListener('click', async () => {
+    const cod_caixa = localStorage.getItem('cod_caixa');
+    const cod_colaborador = localStorage.getItem('cod_colaborador');
+    // const carrinho = JSON.stringify(carrinho);
+    // const metodoPagamento = metodoPagamento;
+    const cod_loja = localStorage.getItem('loja_id');
+
+
+    console.log(cod_caixa, cod_colaborador, carrinho, metodoPagamento)
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/vendas/novo_pedido", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                cod_caixa: parseInt(cod_caixa),
+                cod_colaborador: parseInt(cod_colaborador),
+                cod_forma_pag: parseInt(metodoPagamento),
+                cod_loja: parseInt(cod_loja),
+                produtos: carrinho
+            })
+        });
+        if (response.ok) {
+            alert('Venda efetuada')
+        }
+    } catch (error) {
+        alert('Venda não efetuada')
+        console.error("Erro ao efetuar pedido:", error)
+    }
+})
 
 
 document.addEventListener('DOMContentLoaded', carregarCategorias);

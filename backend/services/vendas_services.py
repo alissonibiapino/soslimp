@@ -1,5 +1,6 @@
 from database.conn_postgres import get_conn
 from psycopg2.extras import RealDictCursor
+from fastapi import HTTPException
 from services.neo4j_services import registrar_novo_pedido_neo4j
 
 def listar_vendas_do_dia():
@@ -75,8 +76,6 @@ def registrar_novo_pedido(dados_do_pedido):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    print(dados_do_pedido)
-
     try:
         valor_total_venda = 0
         produtos_processados = []
@@ -92,11 +91,12 @@ def registrar_novo_pedido(dados_do_pedido):
                         (produto['cod_produto'],))
             prod_bd = cur.fetchone()
 
+            cod_frag = produto.get('cod_fragrancia', 18)
             cur.execute("""
                 SELECT nome_fragrancia
                 FROM fragrancia
                 WHERE cod_fragrancia = %s
-            """, (produto['cod_fragrancia'],))
+            """, (cod_frag,))
             frag_bd = cur.fetchone()
             
             preco_atual = float(prod_bd['preco_unitario'])
@@ -105,12 +105,12 @@ def registrar_novo_pedido(dados_do_pedido):
 
             produtos_processados.append({
                 'cod_produto': produto['cod_produto'],
-                'cod_fragrancia': produto['cod_fragrancia'],
+                'cod_fragrancia': cod_frag,
                 'qtd': produto['quantidade'],
                 'preco': preco_atual,
                 'nome_produto': prod_bd['nome_produto'],
                 'marca': prod_bd['marca'],
-                'nome_fragrancia': frag_bd['nome_fragrancia']
+                'nome_fragrancia': frag_bd['nome_fragrancia'] if frag_bd else 'Sem fragrância'
             })
 
         cur.execute("""
@@ -143,7 +143,7 @@ def registrar_novo_pedido(dados_do_pedido):
 
     except Exception as e:
         conn.rollback()
-        return print(f"Erro no banco: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
     
     finally:
         cur.close()
