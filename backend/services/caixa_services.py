@@ -33,7 +33,7 @@ def abrir_novo_caixa(cod_loja, valor_inicial):
 
         cod_caixa = cur.fetchone()
         conn.commit()
-        return {"Caixa aberto: " : cod_caixa}
+        return cod_caixa['cod_caixa']
 
     except Exception as e:
         conn.rollback()
@@ -85,10 +85,12 @@ def caixa_atual(cod_loja):
     try:
         cur.execute("""
                     SELECT
-                        ROUND(valor_atual, 2)
+                        cod_caixa,
+                        ROUND(valor_atual, 2) as valor_atual
                     FROM caixa
                     WHERE cod_loja = %s
-                    ;""", (cod_loja,))
+                    AND status_caixa = 'ABERTO'
+                    ORDER BY data_abertura DESC LIMIT 1;""", (cod_loja,))
         caixa = cur.fetchone()
         return caixa
 

@@ -284,6 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('operador-nome').textContent = nomeUsuario;
     document.getElementById('operador-cargo').textContent = cargoUsuario;
     document.getElementById('loja-nome').textContent = nomeLoja;
+    verificarStatusCaixa();
 });
 
 // Deslogar
@@ -291,21 +292,87 @@ document.getElementById('btn-logout-acao').addEventListener('click', () => {
     let result = confirm("Deseja realmente sair?");
 
     if (result) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('usuario_nome');
-        localStorage.removeItem('usuario_cargo');
-        localStorage.removeItem('cod_colaborador');
-        localStorage.removeItem('loja_id');
-        localStorage.removeItem('loja_nome');
-        window.location.href = "login.html";
+        fazerLogout()
     } else {
         return
     }
 });
 
+function fazerLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario_nome');
+    localStorage.removeItem('usuario_cargo');
+    localStorage.removeItem('cod_colaborador');
+    localStorage.removeItem('loja_id');
+    localStorage.removeItem('loja_nome');
+    window.location.href = "login.html";
+}
 
 
+// Caixaaaaa
+async function verificarStatusCaixa() {
+    const cod_loja = localStorage.getItem('loja_id');
 
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/caixa/${cod_loja}`);
+        const caixa = await response.json();
+
+        if (!caixa) {
+            const valorInicial = prompt("Nenhum caixa aberto para esta loja. Digite o valor inicial para abrir o caixa:", "0.00");
+
+            if (valorInicial !== null) {
+                const res = await fetch("http://127.0.0.1:8000/caixa/abrir-caixa", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        cod_loja: parseInt(cod_loja),
+                        valor_inicial: parseFloat(valorInicial.replace(',', '.'))
+                    })
+                });
+
+                if (res.ok) {
+                    localStorage.setItem('valorcaixa', parseFloat(valorInicial.replace(',', '.')))
+                    alert("Caixa aberto com sucesso!");
+                }
+            } else {
+                alert("É necessário abrir o caixa para operar o sistema.");
+                fazerLogout()
+            }
+        } else {
+            document.getElementById('menu-caixa-valor').textContent = `R$ ${caixa.valor_atual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            localStorage.setItem('cod_caixa', caixa.cod_caixa);
+        }
+    } catch (error) {
+        console.error("Erro ao verificar caixa:", error);
+    }
+}
+
+document.querySelector('.btn-fechar-caixa').addEventListener('click', async () => {
+    const cod_caixa = localStorage.getItem('cod_caixa');
+    const valorFechamento = localStorage.getItem('valorcaixa');
+
+    const fecharCaixaOption = confirm("Deseja realmente fechar o caixa?");
+
+    if (fecharCaixaOption) {
+        if (valorFechamento !== null) {
+            const response = await fetch("http://127.0.0.1:8000/caixa/fechar-caixa", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    cod_caixa: parseInt(cod_caixa),
+                    valor_fechamento: parseFloat(valorFechamento.replace(',', '.'))
+                })
+            });
+
+            if (response.ok) {
+                fazerLogout()
+                location.href = 'login.html'
+            }
+        }
+    } else {
+        return
+    }
+});
 
 
 document.addEventListener('DOMContentLoaded', carregarCategorias);
