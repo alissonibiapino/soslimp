@@ -133,6 +133,9 @@ INSERT INTO colaborador (cpf_cnpj, nome, cargo, data_admissao) VALUES
 ('525.865.362-45', 'Carol Carvalho', 'VENDEDORA', '2022-07-04'),
 ('525.865.362-48', 'Arthur Papadopoulos', 'VENDEDOR', '2024-02-10');
 
+INSERT INTO colaborador_login (usuario, senha_hash, cod_colaborador) VALUES 
+('well', 1234, 1)
+
 INSERT INTO colaborador_trabalha (cod_loja, cod_colaborador) VALUES (1, 1), (1, 2), (2, 3);
 
 INSERT INTO forma_pagamento (tipo_pagamento) VALUES ('DÉBITO'), ('CRÉDITO'), ('PIX'), ('DINHEIRO');

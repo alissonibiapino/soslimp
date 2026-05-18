@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SOSLimp - Login</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/style-login.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-logo">
+            <img src="./assets/img/logo_soslimp.png" alt="Logo SOSLimp" id="app-logo" />
+        </div>
+
+        <form class="login-form" id="login-form">
+            <div class="input-group">
+                <label for="usuario">Usuário</label>
+                <input type="text" id="usuario" placeholder="Digite seu usuário" required autocomplete="off" />
+            </div>
+
+            <div class="input-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" placeholder="Digite sua senha" required />
+            </div>
+
+            <div class="input-group">
+                <label for="loja">Loja</label>
+                <select id="loja" required>
+                    <option value="" disabled selected>Selecione uma loja</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-registrar">ENTRAR NO SISTEMA</button>
+        </form>
+    </div>
+
+    <script src="./js/login.js"></script>
+</body>
+</html>

@@ -225,7 +225,7 @@ function atualizarTotais() {
     const total = subtotal - desconto;
 
     const formatar = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    
+
     document.getElementById('subtotal').textContent = formatar(subtotal);
     document.getElementById('total').textContent = formatar(total);
     document.getElementById('desconto').textContent = formatar(desconto);
@@ -257,7 +257,7 @@ document.getElementById('btn-limpar-venda').addEventListener('click', () => {
         document.querySelectorAll('.metodo-pagamento').forEach(b => {
             b.classList.remove('metodo-pagamento--ativo');
         });
-        if(typeof buscarRecomendacoes === "function") buscarRecomendacoes();
+        if (typeof buscarRecomendacoes === "function") buscarRecomendacoes();
     }
 });
 
@@ -266,6 +266,44 @@ document.getElementById('btn-registrar-venda').addEventListener('click', () => {
         realizarVenda()
     }
 });
+
+
+
+// Verificar login
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        window.location.href = "login.html";
+    }
+
+    const nomeUsuario = localStorage.getItem('usuario_nome');
+    const cargoUsuario = localStorage.getItem('usuario_cargo');
+    const nomeLoja = localStorage.getItem('loja_nome');
+
+    document.getElementById('operador-nome').textContent = nomeUsuario;
+    document.getElementById('operador-cargo').textContent = cargoUsuario;
+    document.getElementById('loja-nome').textContent = nomeLoja;
+});
+
+// Deslogar
+document.getElementById('btn-logout-acao').addEventListener('click', () => {
+    let result = confirm("Deseja realmente sair?");
+
+    if (result) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario_nome');
+        localStorage.removeItem('usuario_cargo');
+        localStorage.removeItem('cod_colaborador');
+        localStorage.removeItem('loja_id');
+        localStorage.removeItem('loja_nome');
+        window.location.href = "login.html";
+    } else {
+        return
+    }
+});
+
+
 
 
 

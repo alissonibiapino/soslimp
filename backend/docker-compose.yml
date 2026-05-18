@@ -10,11 +10,13 @@ services:
     volumes:
       - ./gerar_banco.sql:/docker-entrypoint-initdb.d/init.sql
       - ./postgres_data:/var/lib/postgresql/data
+      - ./neo4j/data:/data
+      - ./neo4j/logs:/logs
     ports:
       - "5432:5432"
 
   graph_db:
-    image: neo4j:5.15.0
+    image: neo4j:5.26-community
     ports:
       - "7474:7474"
       - "7687:7687"

@@ -1,0 +1,74 @@
+body {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    background-color: var(--cor-background);
+    margin: 0;
+    padding: 20px;
+}
+
+.login-container {
+    background: var(--cor-branco);
+    padding: 50px 20px;
+    border-radius: 8px;
+    border: 1.5px solid var(--cor-borda);
+    box-shadow: var(--sombra-padrao);
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.login-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60px;
+}
+
+.login-logo img {
+    max-width: 180px;
+    height: auto;
+    object-fit: contain;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cor-texto-secundario);
+}
+
+.input-group input, select {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: var(--fonte-poppins-light);
+    background: var(--cor-branco);
+    border: 1.5px solid var(--cor-borda);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    color: var(--cor-texto-primario);
+}
+
+.input-group input:focus {
+    border-color: var(--cor-azul-secundario);
+}
+
+.login-form .btn-registrar {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+}
