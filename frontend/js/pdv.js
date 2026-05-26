@@ -135,7 +135,7 @@ function atualizarCarrinhoHTML() {
     atualizarTotais();
 }
 
-function adicionarAoCarrinho(produto) {
+function adicionarAoCarrinho(produto, isRecomendacao = false) {
     const itemExistente = carrinho.find(item => item.cod_produto === produto.cod_produto);
 
     if (itemExistente) {
@@ -147,7 +147,8 @@ function adicionarAoCarrinho(produto) {
             preco: produto.preco_unitario,
             marca: produto.marca || 'SOSLimp',
             quantidade: 1,
-            cod_fragrancia: 18
+            cod_fragrancia: 18,
+            is_recomendacao: isRecomendacao
         });
     }
     atualizarCarrinhoHTML();
@@ -215,7 +216,7 @@ async function carregarRecomendacoes(produtosCompletos) {
             <span class="comprado-junto__item__preco">${prod.preco_unitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
         `;
 
-        article.addEventListener('click', () => adicionarAoCarrinho(prod));
+        article.addEventListener('click', () => adicionarAoCarrinho(prod, true)); // Passa 'true' para indicar que é uma recomendação
         recomendacao_lista.appendChild(article)
     });
 }
@@ -231,11 +232,31 @@ function atualizarTotais() {
     document.getElementById('total').textContent = formatar(total);
     document.getElementById('desconto').textContent = formatar(desconto);
 
+    const dinheiroCliente = parseFloat(document.getElementById('dinheiro-recebido').value) || 0;
     const btnRegistrar = document.getElementById('btn-registrar-venda');
     const btnLimpar = document.getElementById('btn-limpar-venda');
-    btnRegistrar.disabled = (carrinho.length === 0 || !metodoPagamento);
-    btnLimpar.disabled = (carrinho.length === 0 || !metodoPagamento);
 
+    let isVendaValida = carrinho.length > 0 && metodoPagamento;
+    if (metodoPagamento == 4 && dinheiroCliente < total) {
+        isVendaValida = false;
+    }
+
+    btnRegistrar.disabled = !isVendaValida;
+    btnLimpar.disabled = (carrinho.length === 0);
+
+    if (metodoPagamento == 4) calcularTroco();
+}
+
+function calcularTroco() {
+    const totalTexto = document.getElementById('total').textContent;
+    const totalValue = parseFloat(totalTexto.replace('R$', '').replace('.', '').replace(',', '.')) || 0;
+    const dinheiroCliente = parseFloat(document.getElementById('dinheiro-recebido').value) || 0;
+
+    const trocoCliente = Math.max(0, dinheiroCliente - totalValue);
+    document.getElementById('change-amount').textContent = trocoCliente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    
+    const btnRegistrar = document.getElementById('btn-registrar-venda');
+    btnRegistrar.disabled = (carrinho.length === 0 || (metodoPagamento == 4 && dinheiroCliente < totalValue));
 }
 
 document.querySelectorAll('.metodo-pagamento').forEach(botao => {
@@ -247,6 +268,16 @@ document.querySelectorAll('.metodo-pagamento').forEach(botao => {
         botao.classList.add('metodo-pagamento--ativo');
 
         metodoPagamento = botao.dataset.method;
+
+        const cashDetails = document.querySelector('.troco-pagamento-detalhes');
+        if (metodoPagamento == 4) {
+            cashDetails.style.display = 'block';
+            document.getElementById('dinheiro-recebido').focus();
+        } else {
+            cashDetails.style.display = 'none';
+            document.getElementById('dinheiro-recebido').value = '';
+        }
+
         atualizarTotais();
     });
 });
@@ -262,6 +293,8 @@ document.getElementById('btn-limpar-venda').addEventListener('click', () => {
         if (typeof buscarRecomendacoes === "function") buscarRecomendacoes();
     }
 });
+
+document.getElementById('dinheiro-recebido').addEventListener('input', calcularTroco);
 
 // document.getElementById('btn-registrar-venda').addEventListener('click', () => {
 //     if (confirm("Deseja confirmar a venda?")) {
@@ -378,12 +411,9 @@ document.querySelector('.btn-fechar-caixa').addEventListener('click', async () =
 document.getElementById('btn-registrar-venda').addEventListener('click', async () => {
     const cod_caixa = localStorage.getItem('cod_caixa');
     const cod_colaborador = localStorage.getItem('cod_colaborador');
-    // const carrinho = JSON.stringify(carrinho);
-    // const metodoPagamento = metodoPagamento;
     const cod_loja = localStorage.getItem('loja_id');
-
-
-    console.log(cod_caixa, cod_colaborador, carrinho, metodoPagamento)
+    
+    const valorRecebido = metodoPagamento == 4 ? parseFloat(document.getElementById('dinheiro-recebido').value) : 0;
 
     try {
         const response = await fetch("http://127.0.0.1:8000/vendas/novo_pedido", {
@@ -394,11 +424,22 @@ document.getElementById('btn-registrar-venda').addEventListener('click', async (
                 cod_colaborador: parseInt(cod_colaborador),
                 cod_forma_pag: parseInt(metodoPagamento),
                 cod_loja: parseInt(cod_loja),
-                produtos: carrinho
+                produtos: carrinho,
+                valor_recebido: valorRecebido
             })
         });
         if (response.ok) {
-            alert('Venda efetuada')
+            alert('Venda efetuada com sucesso!');
+            
+            // Limpar PDV após a venda
+            carrinho = [];
+            document.getElementById('dinheiro-recebido').value = '';
+            atualizarCarrinhoHTML();
+            atualizarTotais();
+            buscarRecomendacoes();
+            
+            // Atualizar o valor do caixa no menu superior
+            verificarStatusCaixa();
         }
     } catch (error) {
         alert('Venda não efetuada')

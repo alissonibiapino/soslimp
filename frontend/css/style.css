@@ -656,3 +656,21 @@ button {
     opacity: .5;
     cursor: not-allowed;
 }
+
+/* Estilos para o campo de troco */
+.troco-pagamento-detalhes {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--cor-borda);
+}
+
+.troco-pagamento-detalhes .input-group {
+    margin-bottom: 10px;
+}
+
+.troco-pagamento-detalhes .input-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+    margin-bottom: 5px;
+}

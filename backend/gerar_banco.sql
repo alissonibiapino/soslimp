@@ -76,6 +76,8 @@ CREATE TABLE registro_pedido (
     cod_colaborador INTEGER REFERENCES colaborador (cod_colaborador),
     cod_forma_pag INTEGER REFERENCES forma_pagamento (cod_forma_pag),
     valor_total DECIMAL(10,2),
+    valor_recebido DECIMAL(10,2),
+    troco DECIMAL(10,2),
     hora_do_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -123,6 +125,15 @@ CREATE TABLE produto_fragrancia (
 ALTER TABLE detalhes_pedido
 ADD COLUMN cod_fragrancia INTEGER REFERENCES fragrancia(cod_fragrancia);
 
+ALTER TABLE detalhes_pedido
+ADD COLUMN is_recomendacao BOOLEAN DEFAULT FALSE;
+
+-- Suporte a imagens e gestão de status do produto
+ALTER TABLE produto
+ADD COLUMN url_imagem VARCHAR(255),
+ADD COLUMN ativo BOOLEAN DEFAULT TRUE;
+
+
 -- INSERTS
 INSERT INTO loja (nome_loja, endereco, bairro, cidade, cep, telefone, email, tipo_loja) VALUES 
 ('SOSLimp - Jd. Patrícia', 'R. José Alexandrino de Morães, 489', 'Jardim Patrícia', 'Itaquaquecetuba', '08584-090', '(11)4646-6464','contatoloja1@soslimp.com', 'MATRIZ'),
@@ -134,7 +145,7 @@ INSERT INTO colaborador (cpf_cnpj, nome, cargo, data_admissao) VALUES
 ('525.865.362-48', 'Arthur Papadopoulos', 'VENDEDOR', '2024-02-10');
 
 INSERT INTO colaborador_login (usuario, senha_hash, cod_colaborador) VALUES 
-('well', 1234, 1)
+('well', 1234, 1);
 
 INSERT INTO colaborador_trabalha (cod_loja, cod_colaborador) VALUES (1, 1), (1, 2), (2, 3);
 
@@ -267,110 +278,484 @@ LEFT JOIN fragrancia f ON f.cod_fragrancia = pf.cod_fragrancia
 ORDER BY p.cod_produto;
 
 -- POPULAÇÃO (GERADO POR IA)
+-- POPULAÇÃO REALISTA DE VENDAS
 DO
 $$
 DECLARE
-    v_cur_date date;
-    v_dt_start date := '2026-01-01'::date;
-    v_dt_end   date := CURRENT_DATE;
 
-    v_n_pedidos integer;
-    v_cod_loja integer;
-    v_cod_colab integer;
-    v_cod_forma integer;
+    v_cur_date DATE;
 
-    v_new_cod_venda integer;
+    --------------------------------------------------
+    -- PERÍODO
+    --------------------------------------------------
 
-    v_total NUMERIC;
-    v_n_itens integer;
+    v_dt_start DATE := (CURRENT_DATE - INTERVAL '12 months')::DATE;
+    v_dt_end   DATE := CURRENT_DATE;
 
-    v_prod record;
-    v_fragrancia integer;
-    v_quantidade integer;
+    --------------------------------------------------
+    -- VARIÁVEIS
+    --------------------------------------------------
+
+    v_cod_loja INTEGER;
+    v_cod_colab INTEGER;
+    v_cod_forma INTEGER;
+
+    v_n_pedidos INTEGER;
+    v_new_cod_venda INTEGER;
+
+    v_total NUMERIC(10,2);
+
+    v_n_itens INTEGER;
+
+    v_prod RECORD;
+
+    v_fragrancia INTEGER;
+
+    v_quantidade INTEGER;
+
+    v_hora TIMESTAMP;
+
+    v_hour_rand FLOAT;
+
+    v_is_weekend BOOLEAN;
+
+    --------------------------------------------------
+    -- SAZONALIDADE
+    --------------------------------------------------
+
+    v_month_factor NUMERIC(4,2);
+
+    v_target_recommendation_rate NUMERIC(4,2);
+
+    v_current_month INTEGER;
+
+    v_day_of_week INTEGER;
 
 BEGIN
-    FOR v_cur_date IN SELECT generate_series(v_dt_start, v_dt_end, '1 day')::date LOOP
-        
+
+    --------------------------------------------------
+    -- LOOP DE DATAS
+    --------------------------------------------------
+
+    FOR v_cur_date IN
+        SELECT generate_series(v_dt_start, v_dt_end, '1 day')
+    LOOP
+
+        --------------------------------------------------
+        -- INFO DO DIA
+        --------------------------------------------------
+
+        v_is_weekend := EXTRACT(DOW FROM v_cur_date) IN (0,6);
+
+        v_current_month := EXTRACT(MONTH FROM v_cur_date);
+
+        v_day_of_week := EXTRACT(DOW FROM v_cur_date);
+
+        --------------------------------------------------
+        -- SAZONALIDADE MENSAL
+        --------------------------------------------------
+
+        CASE v_current_month
+
+            -- Janeiro
+            WHEN 1 THEN
+                v_month_factor := 0.85;
+                v_target_recommendation_rate := 0.03;
+
+            -- Fevereiro
+            WHEN 2 THEN
+                v_month_factor := 0.95;
+                v_target_recommendation_rate := 0.04;
+
+            -- Março
+            WHEN 3 THEN
+                v_month_factor := 1.05;
+                v_target_recommendation_rate := 0.05;
+
+            -- Abril
+            WHEN 4 THEN
+                v_month_factor := 1.10;
+                v_target_recommendation_rate := 0.06;
+
+            -- Maio
+            WHEN 5 THEN
+                v_month_factor := 0.92;
+                v_target_recommendation_rate := 0.04;
+
+            -- Junho
+            WHEN 6 THEN
+                v_month_factor := 1.18;
+                v_target_recommendation_rate := 0.07;
+
+            -- Julho
+            WHEN 7 THEN
+                v_month_factor := 1.25;
+                v_target_recommendation_rate := 0.08;
+
+            -- Agosto
+            WHEN 8 THEN
+                v_month_factor := 1.08;
+                v_target_recommendation_rate := 0.06;
+
+            -- Setembro
+            WHEN 9 THEN
+                v_month_factor := 0.90;
+                v_target_recommendation_rate := 0.04;
+
+            -- Outubro
+            WHEN 10 THEN
+                v_month_factor := 1.12;
+                v_target_recommendation_rate := 0.07;
+
+            -- Novembro
+            WHEN 11 THEN
+                v_month_factor := 1.35;
+                v_target_recommendation_rate := 0.08;
+
+            -- Dezembro
+            WHEN 12 THEN
+                v_month_factor := 1.50;
+                v_target_recommendation_rate := 0.08;
+
+        END CASE;
+
+        --------------------------------------------------
+        -- LOOP DE LOJAS
+        --------------------------------------------------
+
         FOR v_cod_loja IN 1..2 LOOP
-            
-            v_n_pedidos := 8 + floor(random()*12)::int;
-            
+
+            --------------------------------------------------
+            -- QUANTIDADE BASE DE PEDIDOS
+            --------------------------------------------------
+
+            IF v_is_weekend THEN
+
+                v_n_pedidos :=
+                (
+                    (
+                        8 + floor(random()*10)::INT
+                    ) * v_month_factor
+                )::INT;
+
+            ELSE
+
+                v_n_pedidos :=
+                (
+                    (
+                        25 + floor(random()*30)::INT
+                    ) * v_month_factor
+                )::INT;
+
+            END IF;
+
+            --------------------------------------------------
+            -- AJUSTE POR DIA DA SEMANA
+            --------------------------------------------------
+
+            CASE v_day_of_week
+
+                -- Segunda
+                WHEN 1 THEN
+                    v_n_pedidos := (v_n_pedidos * 0.85)::INT;
+
+                -- Sexta
+                WHEN 5 THEN
+                    v_n_pedidos := (v_n_pedidos * 1.20)::INT;
+
+                -- Sábado
+                WHEN 6 THEN
+                    v_n_pedidos := (v_n_pedidos * 1.35)::INT;
+
+                -- Domingo
+                WHEN 0 THEN
+                    v_n_pedidos := (v_n_pedidos * 1.15)::INT;
+
+            END CASE;
+
+            --------------------------------------------------
+            -- BLACK FRIDAY
+            --------------------------------------------------
+
+            IF EXTRACT(MONTH FROM v_cur_date) = 11
+            AND EXTRACT(DAY FROM v_cur_date) >= 20
+            THEN
+                v_n_pedidos := (v_n_pedidos * 1.8)::INT;
+            END IF;
+
+            --------------------------------------------------
+            -- NATAL
+            --------------------------------------------------
+
+            IF EXTRACT(MONTH FROM v_cur_date) = 12
+            AND EXTRACT(DAY FROM v_cur_date) >= 15
+            THEN
+                v_n_pedidos := (v_n_pedidos * 1.5)::INT;
+            END IF;
+
+            --------------------------------------------------
+            -- GERA PEDIDOS
+            --------------------------------------------------
+
             FOR i IN 1..v_n_pedidos LOOP
-                
-                SELECT cod_colaborador 
-                INTO v_cod_colab 
-                FROM colaborador_trabalha 
-                WHERE cod_loja = v_cod_loja 
-                ORDER BY random() LIMIT 1;
+
+                --------------------------------------------------
+                -- COLABORADOR
+                --------------------------------------------------
+
+                SELECT cod_colaborador
+                INTO v_cod_colab
+                FROM colaborador_trabalha
+                WHERE cod_loja = v_cod_loja
+                ORDER BY random()
+                LIMIT 1;
+
+                --------------------------------------------------
+                -- FORMA PAGAMENTO
+                --------------------------------------------------
 
                 SELECT cod_forma_pag
                 INTO v_cod_forma
                 FROM forma_pagamento
-                ORDER BY 
+                ORDER BY
                     CASE tipo_pagamento
-                        WHEN 'PIX' THEN random()*2
-                        WHEN 'DÉBITO' THEN random()*1.5
+                        WHEN 'PIX' THEN random()*5
+                        WHEN 'DÉBITO' THEN random()*4
+                        WHEN 'CRÉDITO' THEN random()*3
                         ELSE random()
                     END DESC
                 LIMIT 1;
 
-                INSERT INTO registro_pedido(
-                    cod_loja, cod_colaborador, cod_forma_pag, valor_total, hora_do_registro
+                --------------------------------------------------
+                -- HORÁRIOS MAIS REALISTAS
+                --------------------------------------------------
+
+                v_hour_rand := random();
+
+                IF v_hour_rand < 0.25 THEN
+
+                    --------------------------------------------------
+                    -- MANHÃ
+                    --------------------------------------------------
+
+                    v_hora :=
+                        v_cur_date
+                        + interval '8 hour'
+                        + (random() * interval '3 hour');
+
+                ELSIF v_hour_rand < 0.55 THEN
+
+                    --------------------------------------------------
+                    -- ALMOÇO
+                    --------------------------------------------------
+
+                    v_hora :=
+                        v_cur_date
+                        + interval '11 hour'
+                        + (random() * interval '2 hour');
+
+                ELSIF v_hour_rand < 0.85 THEN
+
+                    --------------------------------------------------
+                    -- TARDE
+                    --------------------------------------------------
+
+                    v_hora :=
+                        v_cur_date
+                        + interval '14 hour'
+                        + (random() * interval '3 hour');
+
+                ELSE
+
+                    --------------------------------------------------
+                    -- NOITE
+                    --------------------------------------------------
+
+                    v_hora :=
+                        v_cur_date
+                        + interval '18 hour'
+                        + (random() * interval '2 hour');
+
+                END IF;
+
+                --------------------------------------------------
+                -- INSERE PEDIDO
+                --------------------------------------------------
+
+                INSERT INTO registro_pedido (
+                    cod_loja,
+                    cod_colaborador,
+                    cod_forma_pag,
+                    valor_total,
+                    valor_recebido,
+                    troco,
+                    hora_do_registro
                 )
                 VALUES (
                     v_cod_loja,
                     v_cod_colab,
                     v_cod_forma,
                     0,
-                    v_cur_date + (random() * interval '10 hours' + interval '8 hours')
+                    0,
+                    0,
+                    v_hora
                 )
-                RETURNING cod_venda INTO v_new_cod_venda;
+                RETURNING cod_venda
+                INTO v_new_cod_venda;
 
                 v_total := 0;
 
-                v_n_itens := 1 + floor(random()*4)::int;
+                --------------------------------------------------
+                -- QUANTIDADE DE ITENS
+                --------------------------------------------------
+
+                IF random() < 0.65 THEN
+
+                    v_n_itens := 1 + floor(random()*2)::INT;
+
+                ELSE
+
+                    v_n_itens := 3 + floor(random()*4)::INT;
+
+                END IF;
+
+                --------------------------------------------------
+                -- INSERE ITENS
+                --------------------------------------------------
 
                 FOR j IN 1..v_n_itens LOOP
-                    
-                    SELECT cod_produto, preco_unitario
-                    INTO v_prod
-                    FROM produto
-                    ORDER BY random()
-                    LIMIT 1;
 
-                    SELECT pf.cod_fragrancia
+                    --------------------------------------------------
+                    -- PRODUTOS CAMPEÕES DE VENDA
+                    --------------------------------------------------
+
+                    /*
+                        70%:
+                        produtos mais vendidos
+
+                        30%:
+                        produtos aleatórios
+                    */
+
+                    IF random() < 0.70 THEN
+
+                        SELECT
+                            cod_produto,
+                            preco_unitario
+                        INTO v_prod
+                        FROM produto
+                        WHERE cod_produto <= 8
+                        ORDER BY random()
+                        LIMIT 1;
+
+                    ELSE
+
+                        SELECT
+                            cod_produto,
+                            preco_unitario
+                        INTO v_prod
+                        FROM produto
+                        ORDER BY random()
+                        LIMIT 1;
+
+                    END IF;
+
+                    --------------------------------------------------
+                    -- FRAGRÂNCIA
+                    --------------------------------------------------
+
+                    SELECT cod_fragrancia
                     INTO v_fragrancia
-                    FROM produto_fragrancia pf
-                    WHERE pf.cod_produto = v_prod.cod_produto
+                    FROM produto_fragrancia
+                    WHERE cod_produto = v_prod.cod_produto
                     ORDER BY random()
                     LIMIT 1;
 
-                    v_quantidade := 1 + floor(random()*3)::int;
+                    --------------------------------------------------
+                    -- QUANTIDADE
+                    --------------------------------------------------
 
-                    INSERT INTO detalhes_pedido(
+                    IF random() < 0.75 THEN
+
+                        v_quantidade := 1;
+
+                    ELSIF random() < 0.90 THEN
+
+                        v_quantidade := 2;
+
+                    ELSE
+
+                        v_quantidade := 3;
+
+                    END IF;
+
+                    --------------------------------------------------
+                    -- INSERE ITEM
+                    --------------------------------------------------
+
+                    INSERT INTO detalhes_pedido (
                         cod_produto,
                         cod_fragrancia,
                         quantidade,
                         preco_unitario,
-                        cod_venda
+                        cod_venda,
+                        is_recomendacao
                     )
                     VALUES (
                         v_prod.cod_produto,
                         v_fragrancia,
                         v_quantidade,
                         v_prod.preco_unitario,
-                        v_new_cod_venda
+                        v_new_cod_venda,
+
+                        (
+                            j > 1
+                            AND random() < v_target_recommendation_rate
+                        )
                     );
 
-                    v_total := v_total + (v_prod.preco_unitario * v_quantidade);
+                    --------------------------------------------------
+                    -- SOMA TOTAL
+                    --------------------------------------------------
+
+                    v_total :=
+                        v_total
+                        + (
+                            v_prod.preco_unitario
+                            * v_quantidade
+                        );
+
                 END LOOP;
 
+                --------------------------------------------------
+                -- ATUALIZA PAGAMENTO
+                --------------------------------------------------
+
                 UPDATE registro_pedido
-                SET valor_total = v_total
+                SET
+                    valor_total = v_total,
+
+                    valor_recebido =
+                        CASE
+                            WHEN v_cod_forma = 4
+                            THEN ceil(v_total / 10) * 10
+                            ELSE v_total
+                        END,
+
+                    troco =
+                        CASE
+                            WHEN v_cod_forma = 4
+                            THEN (ceil(v_total / 10) * 10) - v_total
+                            ELSE 0
+                        END
+
                 WHERE cod_venda = v_new_cod_venda;
 
             END LOOP;
+
         END LOOP;
+
     END LOOP;
+
 END
 $$;

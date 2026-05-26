@@ -79,6 +79,7 @@ def registrar_novo_pedido(dados_do_pedido):
     try:
         valor_total_venda = 0
         produtos_processados = []
+        valor_recebido = float(dados_do_pedido.get('valor_recebido', 0))
 
         for produto in dados_do_pedido['produtos']:
             cur.execute("""
@@ -91,12 +92,13 @@ def registrar_novo_pedido(dados_do_pedido):
                         (produto['cod_produto'],))
             prod_bd = cur.fetchone()
 
+            is_recomendacao = produto.get('is_recomendacao', False)
             cod_frag = produto.get('cod_fragrancia', 18)
             cur.execute("""
                 SELECT nome_fragrancia
                 FROM fragrancia
                 WHERE cod_fragrancia = %s
-            """, (cod_frag,))
+            """, (cod_frag, ))
             frag_bd = cur.fetchone()
             
             preco_atual = float(prod_bd['preco_unitario'])
@@ -110,8 +112,13 @@ def registrar_novo_pedido(dados_do_pedido):
                 'preco': preco_atual,
                 'nome_produto': prod_bd['nome_produto'],
                 'marca': prod_bd['marca'],
-                'nome_fragrancia': frag_bd['nome_fragrancia'] if frag_bd else 'Sem fragrância'
+                'nome_fragrancia': frag_bd['nome_fragrancia'] if frag_bd and frag_bd['nome_fragrancia'] else 'Sem fragrância',
+                'is_recomendacao': is_recomendacao
             })
+
+        troco = 0
+        if int(dados_do_pedido['cod_forma_pag']) == 4:
+            troco = max(0, valor_recebido - valor_total_venda)
 
         cur.execute("""
             INSERT INTO
@@ -120,18 +127,37 @@ def registrar_novo_pedido(dados_do_pedido):
                     cod_colaborador,
                     cod_forma_pag,
                     valor_total,
+                    valor_recebido,
+                    troco,
                     hora_do_registro) 
-            VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+            VALUES (%s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
             RETURNING cod_venda
-        """, (dados_do_pedido['cod_loja'], dados_do_pedido['cod_colaborador'], dados_do_pedido['cod_forma_pag'], valor_total_venda))
+        """, (
+            dados_do_pedido['cod_loja'], 
+            dados_do_pedido['cod_colaborador'], 
+            dados_do_pedido['cod_forma_pag'], 
+            valor_total_venda,
+            valor_recebido,
+            troco
+        ))
 
         cod_venda = cur.fetchone()['cod_venda']
 
+        if int(dados_do_pedido['cod_forma_pag']) == 4 and dados_do_pedido.get('cod_caixa'):
+            cur.execute("""
+                UPDATE caixa SET valor_atual = valor_atual + %s WHERE cod_caixa = %s
+            """, (valor_total_venda, dados_do_pedido['cod_caixa']))
+            
+            cur.execute("""
+                INSERT INTO movimentacao_caixa (cod_caixa, valor, cod_venda)
+                VALUES (%s, %s, %s)
+            """, (dados_do_pedido['cod_caixa'], valor_total_venda, cod_venda))
+
         for ip in produtos_processados:
             cur.execute("""
-                INSERT INTO detalhes_pedido (cod_produto, quantidade, preco_unitario, cod_venda, cod_fragrancia)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (ip['cod_produto'], ip['qtd'], ip['preco'], cod_venda, ip['cod_fragrancia']))
+                INSERT INTO detalhes_pedido (cod_produto, quantidade, preco_unitario, cod_venda, cod_fragrancia, is_recomendacao)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (ip['cod_produto'], ip['qtd'], ip['preco'], cod_venda, ip['cod_fragrancia'], ip['is_recomendacao']))
 
         conn.commit()
 
