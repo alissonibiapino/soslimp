@@ -1,4 +1,5 @@
 // Variaveis
+const BASE_URL = "http://127.0.0.1:8000";
 let carrinho = [];
 let metodoPagamento = 1;
 
@@ -26,7 +27,7 @@ async function carregarCategorias() {
     const nav = document.getElementById('categorias-nav')
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/produtos/categorias");
+        const response = await fetch(`${BASE_URL}/produtos/categorias`);
         const categorias = await response.json()
 
         categorias.forEach(cat => {
@@ -73,10 +74,10 @@ async function carregarProdutos(categoriaId = null) {
 
 
     try {
-        let url = "http://127.0.0.1:8000/produtos";
+        let url = `${BASE_URL}/produtos`;
 
         if (categoriaId) {
-            url = `http://127.0.0.1:8000/produtos/categoria/${categoriaId}`;
+            url = `${BASE_URL}/produtos/categoria/${categoriaId}`;
         }
 
         const response = await fetch(url);
@@ -88,10 +89,20 @@ async function carregarProdutos(categoriaId = null) {
 
             article.innerHTML = `
                 <div class="produto-card__imagem_box">
-                    <img class="produto-card__imagem" />
+                    <img class="produto-card__imagem" src="${BASE_URL}${prod.url_imagem}" alt="${prod.nome_produto}"/>
                 </div>
                 <div class="produto-card__corpo">
                     <h3 class="produto-card__nome">${prod.nome_produto}</h3>
+                    <strong class="produto-card__marca">${prod.marca}</strong>
+                    <div class="produto-card__fragrancias">
+                        ${prod.fragrancias && prod.fragrancias.length > 0
+                            ? prod.fragrancias.map(f => {
+                                const slug = f.nome_fragrancia.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+                                return `<span class="tag tag--fragrancia tag--${slug}">${f.nome_fragrancia}</span>`;
+                            }).join(' ')
+                            : '<span class="tag tag--fragrancia tag--neutro">Padrão</span>'
+                        }
+                    </div>
                     <span class="produto-card__preco">${prod.preco_unitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                 </div>
             `;
@@ -116,6 +127,13 @@ function atualizarCarrinhoHTML() {
         li.className = 'venda-item';
         li.dataset.id = item.cod_produto;
 
+        const fragranciasHTML = item.fragrancias.map(f => {
+            const slug = f.nome_fragrancia.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+            const activeClass = item.cod_fragrancia === f.cod_fragrancia ? 'active' : '';
+            return `<span class="tag tag--fragrancia tag--${slug} ${activeClass}" 
+                          onclick="selecionarFragrancia(${item.cod_produto}, ${f.cod_fragrancia})">${f.nome_fragrancia}</span>`;
+        }).join('');
+
         li.innerHTML = `
             <div class="venda-item__qty">
                 <button class="qty-btn" onclick="alterarQuantidade(${item.cod_produto}, -1)">-</button>
@@ -124,8 +142,9 @@ function atualizarCarrinhoHTML() {
             </div>
             <div class="venda-item__info">
                 <span class="venda-item__nome">${item.nome}</span>
+                <strong class="venda-item__marca">${item.marca}</strong>
                 <div class="venda-item__tags">
-                    <span class="tag tag--blue">${item.marca}</span>
+                    ${fragranciasHTML}
                 </div>
             </div>
             <span class="venda-item__preco">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
@@ -133,6 +152,15 @@ function atualizarCarrinhoHTML() {
         listaVenda.appendChild(li);
     });
     atualizarTotais();
+}
+
+// Função para trocar a fragrância do item no carrinho
+function selecionarFragrancia(codProduto, codFragrancia) {
+    const item = carrinho.find(i => i.cod_produto === codProduto);
+    if (item) {
+        item.cod_fragrancia = codFragrancia;
+        atualizarCarrinhoHTML();
+    }
 }
 
 function adicionarAoCarrinho(produto, isRecomendacao = false) {
@@ -147,7 +175,8 @@ function adicionarAoCarrinho(produto, isRecomendacao = false) {
             preco: produto.preco_unitario,
             marca: produto.marca || 'SOSLimp',
             quantidade: 1,
-            cod_fragrancia: 18,
+            cod_fragrancia: (produto.fragrancias && produto.fragrancias.length > 0) ? produto.fragrancias[0].cod_fragrancia : null,
+            fragrancias: produto.fragrancias || [],
             is_recomendacao: isRecomendacao
         });
     }
@@ -180,7 +209,7 @@ async function buscarRecomendacoes() {
     const cods = carrinho.map(produto => produto.cod_produto)
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/produtos/produtos_recomendados", {
+        const response = await fetch(`${BASE_URL}/produtos/produtos_recomendados`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ cods: cods })
@@ -347,14 +376,14 @@ async function verificarStatusCaixa() {
     const cod_loja = localStorage.getItem('loja_id');
 
     try {
-        const response = await fetch(`http://127.0.0.1:8000/caixa/${cod_loja}`);
+        const response = await fetch(`${BASE_URL}/caixa/${cod_loja}`);
         const caixa = await response.json();
 
         if (!caixa) {
             const valorInicial = prompt("Nenhum caixa aberto para esta loja. Digite o valor inicial para abrir o caixa:", "0.00");
 
             if (valorInicial !== null) {
-                const res = await fetch("http://127.0.0.1:8000/caixa/abrir-caixa", {
+                const res = await fetch(`${BASE_URL}/caixa/abrir-caixa`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -416,7 +445,7 @@ document.getElementById('btn-registrar-venda').addEventListener('click', async (
     const valorRecebido = metodoPagamento == 4 ? parseFloat(document.getElementById('dinheiro-recebido').value) : 0;
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/vendas/novo_pedido", {
+        const response = await fetch(`${BASE_URL}/vendas/novo_pedido`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

@@ -13,10 +13,23 @@ def listar_produtos():
                 p.nome_produto,
                 p.marca,
                 p.preco_unitario,
+                p.url_imagem,
+                p.ativo,
                 c.cod_categoria,
-                c.categoria_produto
+                c.categoria_produto,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'cod_fragrancia', f.cod_fragrancia,
+                            'nome_fragrancia', f.nome_fragrancia
+                        )
+                    ) FILTER (WHERE f.cod_fragrancia IS NOT NULL), '[]'
+                ) AS fragrancias
             FROM produto p
             INNER JOIN categoria c USING (cod_categoria)
+            LEFT JOIN produto_fragrancia pf ON p.cod_produto = pf.cod_produto
+            LEFT JOIN fragrancia f ON pf.cod_fragrancia = f.cod_fragrancia
+            GROUP BY p.cod_produto, c.cod_categoria
         """)
         produtos = cur.fetchall()
         return produtos
@@ -36,12 +49,25 @@ def buscar_produto(produto_id: int):
     try:
         cur.execute("""
             SELECT 
-                cod_produto AS id,
-                nome_produto AS nome,
-                marca,
-                preco_unitario AS preco
-            FROM produto
-            WHERE cod_produto = %s
+                p.cod_produto AS id,
+                p.nome_produto AS nome,
+                p.marca,
+                p.preco_unitario AS preco,
+                p.url_imagem,
+                p.ativo,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'cod_fragrancia', f.cod_fragrancia,
+                            'nome_fragrancia', f.nome_fragrancia
+                        )
+                    ) FILTER (WHERE f.cod_fragrancia IS NOT NULL), '[]'
+                ) AS fragrancias
+            FROM produto p
+            LEFT JOIN produto_fragrancia pf ON p.cod_produto = pf.cod_produto
+            LEFT JOIN fragrancia f ON pf.cod_fragrancia = f.cod_fragrancia
+            WHERE p.cod_produto = %s
+            GROUP BY p.cod_produto
         """, (produto_id,))
         produto = cur.fetchone()
         return produto
@@ -90,11 +116,22 @@ def listar_produtos_por_categoria(categoria_id: int):
                 p.cod_produto,
                 p.nome_produto,
                 p.marca,
-                p.preco_unitario
+                p.preco_unitario,
+                p.url_imagem,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'cod_fragrancia', f.cod_fragrancia,
+                            'nome_fragrancia', f.nome_fragrancia
+                        )
+                    ) FILTER (WHERE f.cod_fragrancia IS NOT NULL), '[]'
+                ) AS fragrancias
             FROM produto p
-            JOIN categoria c
-                ON p.cod_categoria = c.cod_categoria
+            JOIN categoria c ON p.cod_categoria = c.cod_categoria
+            LEFT JOIN produto_fragrancia pf ON p.cod_produto = pf.cod_produto
+            LEFT JOIN fragrancia f ON pf.cod_fragrancia = f.cod_fragrancia
             WHERE c.cod_categoria = %s
+            GROUP BY p.cod_produto
             """, (categoria_id,))
         produtos = cur.fetchall()
         return produtos
@@ -113,8 +150,8 @@ def cadastrar_novo_produto(dados_do_produto):
 
     try:
         query = """
-            INSERT INTO produto (cod_categoria, nome_produto, descricao, marca, preco_unitario)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO produto (cod_categoria, nome_produto, descricao, marca, preco_unitario, url_imagem, ativo)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING cod_produto;
         """
         
@@ -123,7 +160,9 @@ def cadastrar_novo_produto(dados_do_produto):
             dados_do_produto.get('nome_produto'),
             dados_do_produto.get('descricao'),
             dados_do_produto.get('marca'),
-            dados_do_produto.get('preco_unitario')
+            dados_do_produto.get('preco_unitario'),
+            dados_do_produto.get('url_imagem'),
+            dados_do_produto.get('ativo', True)
         )
 
         cur.execute(query, valores)
@@ -136,7 +175,7 @@ def cadastrar_novo_produto(dados_do_produto):
 
     except Exception as e:
         conn.rollback()
-        return print(f"Erro no banco: {e}")
+        raise e
     finally:
         cur.close()
         conn.close()
@@ -148,7 +187,7 @@ def editar_produto(cod_produto, dados_novos):
     try:
         query = """
             UPDATE produto 
-            SET cod_categoria = %s, nome_produto = %s, descricao = %s, marca = %s, preco_unitario = %s
+            SET cod_categoria = %s, nome_produto = %s, descricao = %s, marca = %s, preco_unitario = %s, url_imagem = %s, ativo = %s
             WHERE cod_produto = %s
             RETURNING cod_produto;
         """
@@ -158,6 +197,8 @@ def editar_produto(cod_produto, dados_novos):
             dados_novos.get('descricao'),
             dados_novos.get('marca'),
             dados_novos.get('preco_unitario'),
+            dados_novos.get('url_imagem'),
+            dados_novos.get('ativo'),
             cod_produto
         )
 
@@ -172,7 +213,7 @@ def editar_produto(cod_produto, dados_novos):
     
     except Exception as e:
         conn.rollback()
-        return print(f"Erro no banco: {e}")
+        raise e
     finally:
         cur.close()
         conn.close()
@@ -191,35 +232,29 @@ def listar_produtos_recomendados(produtos_carrinho: list):
 
     try:
         query = """
-            SELECT p.*, c.categoria_produto 
+            SELECT 
+                p.*, 
+                c.categoria_produto,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'cod_fragrancia', f.cod_fragrancia,
+                            'nome_fragrancia', f.nome_fragrancia
+                        )
+                    ) FILTER (WHERE f.cod_fragrancia IS NOT NULL), '[]'
+                ) AS fragrancias
             FROM produto p
             JOIN categoria c ON p.cod_categoria = c.cod_categoria
-            WHERE p.cod_produto = ANY(%s)
+            LEFT JOIN produto_fragrancia pf ON p.cod_produto = pf.cod_produto
+            LEFT JOIN fragrancia f ON pf.cod_fragrancia = f.cod_fragrancia
+            WHERE p.cod_produto = ANY(%s) AND p.ativo = TRUE
+            GROUP BY p.cod_produto, c.cod_categoria
         """
         cur.execute(query, (ids_recomendados,))
         produtos_completos = cur.fetchall()
         return produtos_completos
+    except Exception as e:
+        raise e
     finally:
         cur.close()
         conn.close()
-
-    # try:
-    #     cur.execute("""
-    #         SELECT 
-    #             cod_produto AS id,
-    #             nome_produto AS nome,
-    #             marca,
-    #             preco_unitario AS preco
-    #         FROM produto
-    #         WHERE cod_produto = %s
-    #     """, (produto_id,))
-    #     produto = cur.fetchone()
-    #     return produto
-    
-    # except Exception as e:
-    #     conn.rollback()
-    #     return print(f"Erro no banco: {e}")
-    
-    # finally:
-    #     cur.close()
-    #     conn.close()

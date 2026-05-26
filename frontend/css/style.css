@@ -276,10 +276,42 @@ button {
     color: var(--cor-texto-primario);
 }
 
-.produto-card__tags {
+.produto-card__marca {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--cor-texto-secundario);
+    text-transform: uppercase;
+}
+
+.produto-card__fragrancias {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
+    min-height: 22px;
+    margin-top: 4px;
+}
+
+/* Estilização das fragrnacias */
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.2s;
+}
+
+.tag--fragrancia {
+    background-color: var(--cor-background-cinza);
+    color: var(--cor-texto-secundario);
+    border: 1px solid var(--cor-borda);
+}
+
+.tag--blue {
+    background-color: var(--cor-azul-terciario);
+    color: var(--cor-azul-principal);
 }
 
 .produto-card__preco {
@@ -291,10 +323,13 @@ button {
 }
 
 
-
-
-/* Fragrnacias depois */
-
+.tag--lavanda { background-color: #E0C3FC; color: #6B21A8; border: none; } /* Roxo */
+.tag--limao { background-color: #FEF08A; color: #854D0E; border: none; }   /* Amarelo/Verde */
+.tag--eucalipto { background-color: #BBF7D0; color: #166534; border: none; } /* Verde */
+.tag--floral { background-color: #FBCFE8; color: #9D174D; border: none; }   /* Rosa */
+.tag--talco { background-color: #DBEAFE; color: #1E40AF; border: none; }    /* Azul Bebê */
+.tag--marine { background-color: #CFFAFE; color: #0891B2; border: none; }   /* Ciano */
+.tag--neutro { background-color: #F3F4F6; color: #374151; border: none; }   /* Cinza */
 
 
 /* Menu lateral */
@@ -438,11 +473,36 @@ button {
     margin-bottom: 4px;
 }
 
+.venda-item__marca {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--cor-texto-secundario);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
 .venda-item__tags {
     font-size: 12px;
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
+    margin-top: 6px;
+}
+
+/* Estilo para as fragrâncias no carrinho (apagadinhas por padrão) */
+.venda-item__tags .tag--fragrancia {
+    opacity: 0.4;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+/* Quando selecionada, a cor fica forte e ganha destaque */
+.venda-item__tags .tag--fragrancia.active {
+    opacity: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
 }
 
 .venda-item__preco {

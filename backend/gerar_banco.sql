@@ -170,52 +170,50 @@ INSERT INTO categoria (categoria_produto) VALUES
 ('Limpa Vidros'),
 ('Cloro e Alvejante');
 
-
-INSERT INTO produto (cod_categoria, nome_produto, descricao, marca, preco_unitario) VALUES
-(1, 'Álcool 70% 1L', 'Álcool para higienização', 'SOSLimp', 10.00),
-(2, 'Amaciante 1L', 'Fragrância de Verão', 'SOSLimp', 25.00),
-(4, 'Detergente 5L', 'Galão 5L', 'ALCA', 19.00),
-(7, 'Desengordurante 400ml', 'Limpador pesado', 'SOSLimp', 30.00),
-(1, 'Álcool Gel 500ml', 'Álcool gel antisséptico', 'SOSLimp', 12.00),
-(1, 'Álcool 92% 1L', 'Limpeza pesada', 'SOSLimp', 11.50),
-(2, 'Amaciante 2L', 'Perfume suave', 'SOSLimp', 32.00),
-(2, 'Amaciante 5L', 'Uso profissional', 'SOSLimp', 65.00),
-(4, 'Detergente 500ml', 'Uso diário', 'Ypê', 3.50),
-(4, 'Detergente 500ml', 'Alta eficiência', 'Ypê', 3.50),
-(5, 'Desinfetante 2L', 'Elimina bactérias', 'Bombril', 14.00),
-(5, 'Desinfetante 5L', 'Uso geral', 'SOSLimp', 28.00),
-(7, 'Desengordurante 1L', 'Remove gordura pesada', 'SOSLimp', 18.00),
-(7, 'Desengordurante 5L', 'Uso industrial', 'SOSLimp', 70.00),
-(8, 'Removedor 1L', 'Remove sujeiras difíceis', 'SOSLimp', 22.00),
-(8, 'Limpa Pedra 2L', 'Limpeza externa', 'SOSLimp', 26.00),
-(9, 'Limpador Multiuso 500ml', 'Uso geral', 'Veja', 6.50),
-(9, 'Limpador Multiuso 1L', 'Alta performance', 'Veja', 9.90),
-(10, 'Sabonete Líquido 500ml', 'Higiene pessoal', 'Palmolive', 12.00),
-(10, 'Sabonete Antibacteriano', 'Proteção diária', 'Protex', 8.50),
-(11, 'Esponja Dupla Face', 'Limpeza geral', 'Scotch-Brite', 4.00),
-(11, 'Pano Multiuso', 'Alta absorção', 'Perfex', 6.00),
-(11, 'Vassoura', 'Uso doméstico', 'Condor', 18.00),
-(11, 'Rodo 40cm', 'Limpeza de pisos', 'Condor', 22.00),
-(12, 'Odorizador Spray', 'Ambiente perfumado', 'Glade', 11.00),
-(12, 'Odorizador Automático', 'Liberação contínua', 'Bom Ar', 45.00),
-(13, 'Sabão em Pó 1kg', 'Limpeza de roupas', 'Omo', 18.00),
-(13, 'Sabão em Pó 2kg', 'Alta performance', 'Omo', 32.00),
-(14, 'Sabão Líquido 1L', 'Roupas delicadas', 'Omo', 20.00),
-(14, 'Sabão Líquido 3L', 'Uso frequente', 'Omo', 45.00),
-(15, 'Limpa Vidros 500ml', 'Vidros sem manchas', 'Veja', 8.00),
-(15, 'Limpa Vidros 1L', 'Uso profissional', 'Veja', 14.00),
-(16, 'Água Sanitária 1L', 'Alvejante comum', 'Qboa', 6.00),
-(16, 'Água Sanitária 5L', 'Uso pesado', 'Qboa', 20.00),
-(5, 'Desinfetante 1L', 'Uso diário', 'SOSLimp', 9.50),
-(5, 'Desinfetante 3L', 'Ambientes grandes', 'SOSLimp', 18.00),
-(9, 'Multiuso 2L', 'Limpeza pesada', 'Veja', 15.00),
-(9, 'Multiuso Concentrado 500ml', 'Alta eficiência', 'Veja', 12.00),
-(14, 'Sabão Líquido 5L', 'Uso profissional', 'OMO', 65.00),
-(12, 'Odorizador Gel', 'Perfume contínuo', 'Glade', 9.00),
-(2, 'Amaciante Concentrado 500ml', 'Alta performance', 'SOSLimp', 18.00),
-(3, 'Shampoo Automotivo 1L', 'Limpeza de veículos', 'Vonixx', 25.00),
-(8, 'Limpa Alumínio 500ml', 'Brilho intenso', 'SOSLimp', 7.00);
-
+INSERT INTO produto (cod_categoria, nome_produto, descricao, marca, preco_unitario, url_imagem) VALUES
+(1, 'Álcool 70% 1L', 'Álcool para higienização', 'SOSLimp', 10.00, '/static/products/alcool-70.jpg'),
+(2, 'Amaciante 1L', 'Fragrância de Verão', 'SOSLimp', 25.00, '/static/products/amaciante-1l.jpg'),
+(4, 'Detergente 5L', 'Galão 5L', 'ALCA', 19.00, '/static/products/detergente-5l.jpg'),
+(7, 'Desengordurante 400ml', 'Limpador pesado', 'SOSLimp', 30.00, '/static/products/desengordurante.jpg'),
+(1, 'Álcool Gel 500ml', 'Álcool gel antisséptico', 'SOSLimp', 12.00, '/static/products/alcool-gel.jpg'),
+(1, 'Álcool 92% 1L', 'Limpeza pesada', 'SOSLimp', 11.50, '/static/products/alcool-92.jpg'),
+(2, 'Amaciante 2L', 'Perfume suave', 'SOSLimp', 32.00, '/static/products/amaciante-2l.jpg'),
+(2, 'Amaciante 5L', 'Uso profissional', 'SOSLimp', 65.00, '/static/products/amaciante-5l.jpg'),
+(4, 'Detergente 500ml', 'Uso diário', 'Ypê', 3.50, '/static/products/detergente-ype.jpg'),
+(4, 'Detergente 500ml', 'Alta eficiência', 'Ypê', 3.50, '/static/products/detergente-ype-2.jpg'),
+(5, 'Desinfetante 2L', 'Elimina bactérias', 'Bombril', 14.00, '/static/products/desinfetante-2l.jpg'),
+(5, 'Desinfetante 5L', 'Uso geral', 'SOSLimp', 28.00, '/static/products/desinfetante-5l.jpg'),
+(7, 'Desengordurante 1L', 'Remove gordura pesada', 'SOSLimp', 18.00, '/static/products/desengordurante-1l.jpg'),
+(7, 'Desengordurante 5L', 'Uso industrial', 'SOSLimp', 70.00, '/static/products/desengordurante-5l.jpg'),
+(8, 'Removedor 1L', 'Remove sujeiras difíceis', 'SOSLimp', 22.00, '/static/products/removedor.jpg'),
+(8, 'Limpa Pedra 2L', 'Limpeza externa', 'SOSLimp', 26.00, '/static/products/limpa-pedra.jpg'),
+(9, 'Limpador Multiuso 500ml', 'Uso geral', 'Veja', 6.50, '/static/products/veja-multiuso.jpg'),
+(9, 'Limpador Multiuso 1L', 'Alta performance', 'Veja', 9.90, '/static/products/veja-multiuso-1l.jpg'),
+(10, 'Sabonete Líquido 500ml', 'Higiene pessoal', 'Palmolive', 12.00, '/static/products/sabonete-palmolive.jpg'),
+(10, 'Sabonete Antibacteriano', 'Proteção diária', 'Protex', 8.50, '/static/products/sabonete-protex.jpg'),
+(11, 'Esponja Dupla Face', 'Limpeza geral', 'Scotch-Brite', 4.00, '/static/products/esponja.jpg'),
+(11, 'Pano Multiuso', 'Alta absorção', 'Perfex', 6.00, '/static/products/pano-multiuso.jpg'),
+(11, 'Vassoura', 'Uso doméstico', 'Condor', 18.00, '/static/products/vassoura.jpg'),
+(11, 'Rodo 40cm', 'Limpeza de pisos', 'Condor', 22.00, '/static/products/rodo.jpg'),
+(12, 'Odorizador Spray', 'Ambiente perfumado', 'Glade', 11.00, '/static/products/odorizador-spray.jpg'),
+(12, 'Odorizador Automático', 'Liberação contínua', 'Bom Ar', 45.00, '/static/products/odorizador-automatico.jpg'),
+(13, 'Sabão em Pó 1kg', 'Limpeza de roupas', 'Omo', 18.00, '/static/products/sabao-po-1kg.jpg'),
+(13, 'Sabão em Pó 2kg', 'Alta performance', 'Omo', 32.00, '/static/products/sabao-po-2kg.jpg'),
+(14, 'Sabão Líquido 1L', 'Roupas delicadas', 'Omo', 20.00, '/static/products/sabao-liquido-1l.jpg'),
+(14, 'Sabão Líquido 3L', 'Uso frequente', 'Omo', 45.00, '/static/products/sabao-liquido-3l.jpg'),
+(15, 'Limpa Vidros 500ml', 'Vidros sem manchas', 'Veja', 8.00, '/static/products/limpa-vidros.jpg'),
+(15, 'Limpa Vidros 1L', 'Uso profissional', 'Veja', 14.00, '/static/products/limpa-vidros-1l.jpg'),
+(16, 'Água Sanitária 1L', 'Alvejante comum', 'Qboa', 6.00, '/static/products/agua-sanitaria-1l.jpg'),
+(16, 'Água Sanitária 5L', 'Uso pesado', 'Qboa', 20.00, '/static/products/agua-sanitaria-5l.jpg'),
+(5, 'Desinfetante 1L', 'Uso diário', 'SOSLimp', 9.50, '/static/products/desinfetante-1l.jpg'),
+(5, 'Desinfetante 3L', 'Ambientes grandes', 'SOSLimp', 18.00, '/static/products/desinfetante-3l.jpg'),
+(9, 'Multiuso 2L', 'Limpeza pesada', 'Veja', 15.00, '/static/products/veja-2l.jpg'),
+(9, 'Multiuso Concentrado 500ml', 'Alta eficiência', 'Veja', 12.00, '/static/products/veja-concentrado.jpg'),
+(14, 'Sabão Líquido 5L', 'Uso profissional', 'OMO', 65.00, '/static/products/sabao-liquido-5l.jpg'),
+(12, 'Odorizador Gel', 'Perfume contínuo', 'Glade', 9.00, '/static/products/odorizador-gel.jpg'),
+(2, 'Amaciante Concentrado 500ml', 'Alta performance', 'SOSLimp', 18.00, '/static/products/amaciante-concentrado.jpg'),
+(3, 'Shampoo Automotivo 1L', 'Limpeza de veículos', 'Vonixx', 25.00, '/static/products/shampoo-auto.jpg'),
+(8, 'Limpa Alumínio 500ml', 'Brilho intenso', 'SOSLimp', 7.00, '/static/products/limpa-aluminio.jpg');
 
 INSERT INTO fragrancia (nome_fragrancia) VALUES
 ('Lavanda'),
@@ -338,7 +336,8 @@ BEGIN
     --------------------------------------------------
 
     FOR v_cur_date IN
-        SELECT generate_series(v_dt_start, v_dt_end, '1 day')
+        SELECT gs::DATE
+        FROM generate_series(v_dt_start, v_dt_end, '1 day') AS gs
     LOOP
 
         --------------------------------------------------
@@ -347,9 +346,9 @@ BEGIN
 
         v_is_weekend := EXTRACT(DOW FROM v_cur_date) IN (0,6);
 
-        v_current_month := EXTRACT(MONTH FROM v_cur_date);
+        v_current_month := EXTRACT(MONTH FROM v_cur_date)::INT;
 
-        v_day_of_week := EXTRACT(DOW FROM v_cur_date);
+        v_day_of_week := EXTRACT(DOW FROM v_cur_date)::INT;
 
         --------------------------------------------------
         -- SAZONALIDADE MENSAL
@@ -357,65 +356,57 @@ BEGIN
 
         CASE v_current_month
 
-            -- Janeiro
             WHEN 1 THEN
                 v_month_factor := 0.85;
                 v_target_recommendation_rate := 0.03;
 
-            -- Fevereiro
             WHEN 2 THEN
                 v_month_factor := 0.95;
                 v_target_recommendation_rate := 0.04;
 
-            -- Março
             WHEN 3 THEN
                 v_month_factor := 1.05;
                 v_target_recommendation_rate := 0.05;
 
-            -- Abril
             WHEN 4 THEN
                 v_month_factor := 1.10;
                 v_target_recommendation_rate := 0.06;
 
-            -- Maio
             WHEN 5 THEN
                 v_month_factor := 0.92;
                 v_target_recommendation_rate := 0.04;
 
-            -- Junho
             WHEN 6 THEN
                 v_month_factor := 1.18;
                 v_target_recommendation_rate := 0.07;
 
-            -- Julho
             WHEN 7 THEN
                 v_month_factor := 1.25;
                 v_target_recommendation_rate := 0.08;
 
-            -- Agosto
             WHEN 8 THEN
                 v_month_factor := 1.08;
                 v_target_recommendation_rate := 0.06;
 
-            -- Setembro
             WHEN 9 THEN
                 v_month_factor := 0.90;
                 v_target_recommendation_rate := 0.04;
 
-            -- Outubro
             WHEN 10 THEN
                 v_month_factor := 1.12;
                 v_target_recommendation_rate := 0.07;
 
-            -- Novembro
             WHEN 11 THEN
                 v_month_factor := 1.35;
                 v_target_recommendation_rate := 0.08;
 
-            -- Dezembro
             WHEN 12 THEN
                 v_month_factor := 1.50;
                 v_target_recommendation_rate := 0.08;
+
+            ELSE
+                v_month_factor := 1.00;
+                v_target_recommendation_rate := 0.05;
 
         END CASE;
 
@@ -470,6 +461,9 @@ BEGIN
                 -- Domingo
                 WHEN 0 THEN
                     v_n_pedidos := (v_n_pedidos * 1.15)::INT;
+
+                ELSE
+                    v_n_pedidos := v_n_pedidos;
 
             END CASE;
 

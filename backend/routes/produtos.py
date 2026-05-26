@@ -1,5 +1,9 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, UploadFile, File, Form, HTTPException
 from database.conn_postgres import get_conn
+import os
+import uuid
+import shutil
+from typing import Optional
 
 from services.produtos_services import (
       listar_produtos,
@@ -12,6 +16,8 @@ from services.produtos_services import (
 )
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
+
+UPLOAD_DIR = "static/products"
 
 # Aviso para o Alisson do futuro:
 # Se a rota começa com "listar" é pq retorna várias coisas/linhas
@@ -34,28 +40,91 @@ def get_produtos_por_categoria(categoria_id: int):
      return listar_produtos_por_categoria(categoria_id)
 
 @router.post("/novo_produto")
-def post_cadastrar_novo_produto(produto: dict = Body(...)):
-     id_gerado = cadastrar_novo_produto(produto)
+async def post_cadastrar_novo_produto(
+     nome_produto: str = Form(...),
+     marca: str = Form(...),
+     descricao: str = Form(...),
+     preco_unitario: float = Form(...),
+     cod_categoria: int = Form(...),
+     imagem: Optional[UploadFile] = File(None)
+):
+     url_imagem = None
+     if imagem:
+          os.makedirs(UPLOAD_DIR, exist_ok=True)
+          extensao = os.path.splitext(imagem.filename)[1]
+          nome_arquivo = f"{uuid.uuid4()}{extensao}"
+          caminho_arquivo = os.path.join(UPLOAD_DIR, nome_arquivo)
+          
+          with open(caminho_arquivo, "wb") as buffer:
+               shutil.copyfileobj(imagem.file, buffer)
+          url_imagem = f"/{UPLOAD_DIR}/{nome_arquivo}"
 
-     return {
-          "status" : "sucesso",
-          "mensagem:" : f"Produto {produto.get('nome_produto')}. Id: {id_gerado}"
+     produto_dict = {
+          "nome_produto": nome_produto,
+          "marca": marca,
+          "descricao": descricao,
+          "preco_unitario": preco_unitario,
+          "cod_categoria": cod_categoria,
+          "url_imagem": url_imagem,
+          "ativo": True
      }
 
+     try:
+         id_gerado = cadastrar_novo_produto(produto_dict)
+         return {
+              "status" : "sucesso",
+              "mensagem" : f"Produto {nome_produto} cadastrado. Id: {id_gerado}"
+         }
+     except Exception as e:
+         raise HTTPException(status_code=500, detail=f"Erro ao cadastrar produto: {str(e)}")
+
+
 @router.put("/atualizar/{cod_produto}")
-def put_atualizar_produto(cod_produto: int, dados: dict = Body(...)):
+async def put_atualizar_produto(
+    cod_produto: int,
+    nome_produto: str = Form(...),
+    marca: str = Form(...),
+    descricao: str = Form(...),
+    preco_unitario: float = Form(...),
+    cod_categoria: int = Form(...),
+    ativo: bool = Form(...),
+    url_imagem_atual: Optional[str] = Form(None),
+    imagem: Optional[UploadFile] = File(None)
+):
       try:
-            id_atualizado = editar_produto(cod_produto, dados)
+            url_final = url_imagem_atual
+            
+            if imagem:
+                # (Lógica de salvar novo arquivo similar à de cima...)
+                extensao = os.path.splitext(imagem.filename)[1]
+                nome_arquivo = f"{uuid.uuid4()}{extensao}"
+                caminho_arquivo = os.path.join(UPLOAD_DIR, nome_arquivo)
+                os.makedirs(UPLOAD_DIR, exist_ok=True)
+                with open(caminho_arquivo, "wb") as buffer:
+                    shutil.copyfileobj(imagem.file, buffer)
+                url_final = f"/{UPLOAD_DIR}/{nome_arquivo}"
+
+            dados_dict = {
+                "nome_produto": nome_produto,
+                "marca": marca,
+                "descricao": descricao,
+                "preco_unitario": preco_unitario,
+                "cod_categoria": cod_categoria,
+                "url_imagem": url_final,
+                "ativo": ativo
+            }
+
+            id_atualizado = editar_produto(cod_produto, dados_dict)
 
             if not id_atualizado:
-                 return print("Produto não encontrado")
+                 raise HTTPException(status_code=404, detail="Produto não encontrado")
             return {
                  "status" : "sucesso",
                  "mensagem" : f"Produto {cod_produto} atualizado com sucesso"
             }
 
       except Exception as e:
-            return print(f"Erro no banco: {e}")
+            raise HTTPException(status_code=500, detail=f"Erro ao atualizar produto: {str(e)}")
       
 @router.post("/produtos_recomendados")
 def get_produtos_recomendados(carrinho: dict):
