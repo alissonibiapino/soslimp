@@ -98,9 +98,21 @@ button {
     width: 36px;
     height: 36px;
     border-radius: 100%;
-    color: var(cor-cinza);
+    color: var(--cor-texto-secundario);
+    text-decoration: none;
     transition: background .15s, color .15s;
     background: var(--cor-branco);
+}
+
+.btn-gestao-link {
+    text-decoration: none;
+    transition: all .2s;
+    font-weight: 500;
+}
+
+.btn-gestao-link:hover {
+    background: var(--cor-azul-terciario);
+    color: var(--cor-azul-principal);
 }
 
 .btn-icon:hover {
