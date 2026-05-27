@@ -180,7 +180,7 @@ INSERT INTO produto (cod_categoria, nome_produto, descricao, marca, preco_unitar
 (2, 'Amaciante 2L', 'Perfume suave', 'SOSLimp', 32.00, '/static/products/amaciante-2l.jpg'),
 (2, 'Amaciante 5L', 'Uso profissional', 'SOSLimp', 65.00, '/static/products/amaciante-5l.jpg'),
 (4, 'Detergente 500ml', 'Uso diário', 'Ypê', 3.50, '/static/products/detergente-ype.jpg'),
-(4, 'Detergente 500ml', 'Alta eficiência', 'Ypê', 3.50, '/static/products/detergente-ype-2.jpg'),
+(4, 'Detergente 500ml alta eficiência', 'Alta eficiência', 'Ypê', 3.50, '/static/products/detergente-ype-2.jpg'),
 (5, 'Desinfetante 2L', 'Elimina bactérias', 'Bombril', 14.00, '/static/products/desinfetante-2l.jpg'),
 (5, 'Desinfetante 5L', 'Uso geral', 'SOSLimp', 28.00, '/static/products/desinfetante-5l.jpg'),
 (7, 'Desengordurante 1L', 'Remove gordura pesada', 'SOSLimp', 18.00, '/static/products/desengordurante-1l.jpg'),
@@ -236,16 +236,16 @@ INSERT INTO fragrancia (nome_fragrancia) VALUES
 ('Sem fragrância');
 
 INSERT INTO produto_fragrancia VALUES
-(2, 1), (2, 14), (2, 6),
-(7, 1), (7, 15), (7, 11),
-(8, 2), (8, 12), (8, 10),
+(2, 1), (2, 12),
+(7, 1), (7, 15), (7, 11), (7, 10), (7, 9),
+(8, 1), (8, 12), (8, 10),
 (3, 17),
 (9, 3), (9, 9),
 (10, 4), (10, 11),
 (11, 5), (11, 13),
-(12, 1), (12, 6),
-(35, 13), (35, 5),
-(36, 1), (36, 8),
+(12, 1), (12, 2), (12, 5), (12, 6), (12, 7), (12, 8), (12, 9), (12, 13), (12, 15),
+(35, 1), (35, 2), (35, 5), (35, 6), (35, 7), (35, 8), (35, 9), (35, 13), (35, 15),
+(36, 1), (36, 2), (36, 5), (36, 6), (36, 7), (36, 8), (36, 9), (36, 13), (36, 15),
 (17, 3), (17, 14),
 (18, 3), (18, 9),
 (37, 3), (37, 13),
@@ -358,57 +358,51 @@ BEGIN
 
             WHEN 1 THEN
                 v_month_factor := 0.85;
-                v_target_recommendation_rate := 0.03;
 
             WHEN 2 THEN
-                v_month_factor := 0.95;
-                v_target_recommendation_rate := 0.04;
+                v_month_factor := 0.90;
 
             WHEN 3 THEN
-                v_month_factor := 1.05;
-                v_target_recommendation_rate := 0.05;
+                v_month_factor := 1.00;
 
             WHEN 4 THEN
-                v_month_factor := 1.10;
-                v_target_recommendation_rate := 0.06;
+                v_month_factor := 1.00;
 
             WHEN 5 THEN
-                v_month_factor := 0.92;
-                v_target_recommendation_rate := 0.04;
+                v_month_factor := 0.95;
 
             WHEN 6 THEN
-                v_month_factor := 1.18;
-                v_target_recommendation_rate := 0.07;
+                v_month_factor := 1.05;
 
             WHEN 7 THEN
-                v_month_factor := 1.25;
-                v_target_recommendation_rate := 0.08;
+                v_month_factor := 1.08;
 
             WHEN 8 THEN
-                v_month_factor := 1.08;
-                v_target_recommendation_rate := 0.06;
+                v_month_factor := 1.00;
 
             WHEN 9 THEN
-                v_month_factor := 0.90;
-                v_target_recommendation_rate := 0.04;
+                v_month_factor := 0.92;
 
             WHEN 10 THEN
-                v_month_factor := 1.12;
-                v_target_recommendation_rate := 0.07;
+                v_month_factor := 1.02;
 
             WHEN 11 THEN
-                v_month_factor := 1.35;
-                v_target_recommendation_rate := 0.08;
+                v_month_factor := 1.10;
 
             WHEN 12 THEN
-                v_month_factor := 1.50;
-                v_target_recommendation_rate := 0.08;
+                v_month_factor := 1.15;
 
             ELSE
                 v_month_factor := 1.00;
-                v_target_recommendation_rate := 0.05;
 
         END CASE;
+
+        --------------------------------------------------
+        -- IA / RECOMENDAÇÃO
+        --------------------------------------------------
+
+        -- cerca de 3%~5% dos pedidos com recomendação
+        v_target_recommendation_rate := 0.05;
 
         --------------------------------------------------
         -- LOOP DE LOJAS
@@ -422,22 +416,32 @@ BEGIN
 
             IF v_is_weekend THEN
 
+                -- 1 a 4 pedidos por loja
                 v_n_pedidos :=
                 (
                     (
-                        8 + floor(random()*10)::INT
+                        1 + floor(random()*4)::INT
                     ) * v_month_factor
                 )::INT;
 
             ELSE
 
+                -- 3 a 8 pedidos por loja
                 v_n_pedidos :=
                 (
                     (
-                        25 + floor(random()*30)::INT
+                        3 + floor(random()*6)::INT
                     ) * v_month_factor
                 )::INT;
 
+            END IF;
+
+            --------------------------------------------------
+            -- GARANTE MÍNIMO
+            --------------------------------------------------
+
+            IF v_n_pedidos < 1 THEN
+                v_n_pedidos := 1;
             END IF;
 
             --------------------------------------------------
@@ -446,21 +450,17 @@ BEGIN
 
             CASE v_day_of_week
 
-                -- Segunda
                 WHEN 1 THEN
-                    v_n_pedidos := (v_n_pedidos * 0.85)::INT;
+                    v_n_pedidos := GREATEST(1, (v_n_pedidos * 0.85)::INT);
 
-                -- Sexta
                 WHEN 5 THEN
-                    v_n_pedidos := (v_n_pedidos * 1.20)::INT;
+                    v_n_pedidos := GREATEST(1, (v_n_pedidos * 1.10)::INT);
 
-                -- Sábado
                 WHEN 6 THEN
-                    v_n_pedidos := (v_n_pedidos * 1.35)::INT;
+                    v_n_pedidos := GREATEST(1, (v_n_pedidos * 1.15)::INT);
 
-                -- Domingo
                 WHEN 0 THEN
-                    v_n_pedidos := (v_n_pedidos * 1.15)::INT;
+                    v_n_pedidos := GREATEST(1, (v_n_pedidos * 1.05)::INT);
 
                 ELSE
                     v_n_pedidos := v_n_pedidos;
@@ -474,7 +474,7 @@ BEGIN
             IF EXTRACT(MONTH FROM v_cur_date) = 11
             AND EXTRACT(DAY FROM v_cur_date) >= 20
             THEN
-                v_n_pedidos := (v_n_pedidos * 1.8)::INT;
+                v_n_pedidos := (v_n_pedidos * 1.20)::INT;
             END IF;
 
             --------------------------------------------------
@@ -484,7 +484,7 @@ BEGIN
             IF EXTRACT(MONTH FROM v_cur_date) = 12
             AND EXTRACT(DAY FROM v_cur_date) >= 15
             THEN
-                v_n_pedidos := (v_n_pedidos * 1.5)::INT;
+                v_n_pedidos := (v_n_pedidos * 1.15)::INT;
             END IF;
 
             --------------------------------------------------
@@ -528,20 +528,12 @@ BEGIN
 
                 IF v_hour_rand < 0.25 THEN
 
-                    --------------------------------------------------
-                    -- MANHÃ
-                    --------------------------------------------------
-
                     v_hora :=
                         v_cur_date
                         + interval '8 hour'
                         + (random() * interval '3 hour');
 
                 ELSIF v_hour_rand < 0.55 THEN
-
-                    --------------------------------------------------
-                    -- ALMOÇO
-                    --------------------------------------------------
 
                     v_hora :=
                         v_cur_date
@@ -550,20 +542,12 @@ BEGIN
 
                 ELSIF v_hour_rand < 0.85 THEN
 
-                    --------------------------------------------------
-                    -- TARDE
-                    --------------------------------------------------
-
                     v_hora :=
                         v_cur_date
                         + interval '14 hour'
                         + (random() * interval '3 hour');
 
                 ELSE
-
-                    --------------------------------------------------
-                    -- NOITE
-                    --------------------------------------------------
 
                     v_hora :=
                         v_cur_date
@@ -603,13 +587,20 @@ BEGIN
                 -- QUANTIDADE DE ITENS
                 --------------------------------------------------
 
-                IF random() < 0.65 THEN
+                IF random() < 0.78 THEN
 
-                    v_n_itens := 1 + floor(random()*2)::INT;
+                    -- maioria compra 1 item
+                    v_n_itens := 1;
+
+                ELSIF random() < 0.95 THEN
+
+                    -- parte relevante compra 2
+                    v_n_itens := 2;
 
                 ELSE
 
-                    v_n_itens := 3 + floor(random()*4)::INT;
+                    -- poucas compras maiores
+                    v_n_itens := 3;
 
                 END IF;
 
@@ -620,35 +611,93 @@ BEGIN
                 FOR j IN 1..v_n_itens LOOP
 
                     --------------------------------------------------
-                    -- PRODUTOS CAMPEÕES DE VENDA
+                    -- PRODUTOS MAIS REALISTAS
                     --------------------------------------------------
 
-                    /*
-                        70%:
-                        produtos mais vendidos
+                    IF random() < 0.50 THEN
 
-                        30%:
-                        produtos aleatórios
-                    */
-
-                    IF random() < 0.70 THEN
+                        --------------------------------------------------
+                        -- ALTO GIRO / SOSLIMP
+                        --------------------------------------------------
 
                         SELECT
                             cod_produto,
                             preco_unitario
                         INTO v_prod
                         FROM produto
-                        WHERE cod_produto <= 8
+                        WHERE cod_produto IN (
+                            2,
+                            3,
+                            11,
+                            12,
+                            13,
+                            17,
+                            18,
+                            29,
+                            33,
+                            35,
+                            36,
+                            37,
+                            40,
+                            43
+                        )
+                        ORDER BY random()
+                        LIMIT 1;
+
+                    ELSIF random() < 0.78 THEN
+
+                        --------------------------------------------------
+                        -- GIRO MÉDIO
+                        --------------------------------------------------
+
+                        SELECT
+                            cod_produto,
+                            preco_unitario
+                        INTO v_prod
+                        FROM produto
+                        WHERE (
+                            marca = 'SOSLimp'
+                            OR cod_categoria IN (
+                                1,
+                                2,
+                                4,
+                                5,
+                                13,
+                                14,
+                                15
+                            )
+                        )
+                        AND preco_unitario <= 25
+                        ORDER BY random()
+                        LIMIT 1;
+
+                    ELSIF random() < 0.93 THEN
+
+                        --------------------------------------------------
+                        -- PRODUTOS NORMAIS
+                        --------------------------------------------------
+
+                        SELECT
+                            cod_produto,
+                            preco_unitario
+                        INTO v_prod
+                        FROM produto
+                        WHERE preco_unitario <= 35
                         ORDER BY random()
                         LIMIT 1;
 
                     ELSE
 
+                        --------------------------------------------------
+                        -- BAIXO GIRO
+                        --------------------------------------------------
+
                         SELECT
                             cod_produto,
                             preco_unitario
                         INTO v_prod
                         FROM produto
+                        WHERE preco_unitario > 35
                         ORDER BY random()
                         LIMIT 1;
 
@@ -669,17 +718,13 @@ BEGIN
                     -- QUANTIDADE
                     --------------------------------------------------
 
-                    IF random() < 0.75 THEN
+                    IF random() < 0.93 THEN
 
                         v_quantidade := 1;
 
-                    ELSIF random() < 0.90 THEN
-
-                        v_quantidade := 2;
-
                     ELSE
 
-                        v_quantidade := 3;
+                        v_quantidade := 2;
 
                     END IF;
 
@@ -703,8 +748,7 @@ BEGIN
                         v_new_cod_venda,
 
                         (
-                            j > 1
-                            AND random() < v_target_recommendation_rate
+                            random() < v_target_recommendation_rate
                         )
                     );
 
