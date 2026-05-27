@@ -22,6 +22,11 @@ function exibirData() {
     document.getElementById('menu-data').textContent = dataExtenso;
 }
 
+function atualizarRelogio() {
+    const agora = new Date();
+    document.getElementById('menu-hora').textContent = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
 // Categorias
 async function carregarCategorias() {
     const nav = document.getElementById('categorias-nav')
@@ -479,5 +484,7 @@ document.getElementById('btn-registrar-venda').addEventListener('click', async (
 
 document.addEventListener('DOMContentLoaded', carregarCategorias);
 exibirData();
+atualizarRelogio();
+setInterval(atualizarRelogio, 60000);
 carregarProdutos();
 atualizarTotais();

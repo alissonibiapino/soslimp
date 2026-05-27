@@ -38,18 +38,19 @@ def recomendar_produtos_carrinho(produtos_carrinho: list):
         WHERE p.cod_produto IN $ids_carrinho
 
         MATCH (p)<-[:CONTEM]-(v:Venda)-[:CONTEM]->(p2:Produto)
-        WHERE NOT p2.cod_produto = p.cod_produto
+        WHERE NOT p2.cod_produto IN $ids_carrinho
 
         OPTIONAL MATCH (p)-[:TEM_FRAGRANCIA]->(f:Fragrancia)<-[:TEM_FRAGRANCIA]-(p2)
 
-        WITH p2, 
-            count(DISTINCT v) * 10 AS peso_venda, 
-            count(DISTINCT f) * 2 AS peso_fragrancia
+        WITH 
+            p2,
+            count(DISTINCT v) AS vendas_juntas,
+            count(DISTINCT f) AS fragrancias_iguais
 
         RETURN 
             p2.cod_produto AS id,
             p2.nome AS nome,
-            (peso_venda + peso_fragrancia) AS score
+            (vendas_juntas * 10) + (fragrancias_iguais * 2) AS score
         ORDER BY score DESC
         LIMIT 3
     """
