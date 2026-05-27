@@ -1,0 +1,163 @@
+/* Estilo da tabela com os produtos */
+
+.gestao-lista-container {
+    background: var(--cor-branco);
+    border-radius: 8px;
+    border: 1.5px solid var(--cor-borda);
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.tabela-gestao {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tabela-gestao th {
+    background: var(--cor-background-cinza);
+    padding: 12px 16px;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--cor-texto-secundario);
+    font-weight: 600;
+    border-bottom: 1px solid var(--cor-borda);
+}
+
+.tabela-gestao td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--cor-borda);
+    color: var(--cor-texto-primario);
+    font-size: 13.5px;
+}
+
+.tabela-gestao tr:last-child td {
+    border-bottom: none;
+}
+
+.tabela-gestao tr:hover {
+    background: #fafafa;
+}
+
+/* linhas da tabela */
+.produto-info-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.produto-img-mini {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--cor-background-cinza);
+}
+
+/* tags */
+.tag--sucesso {
+    background-color: #d3f9d8 !important;
+    color: var(--cor-sucesso) !important;
+    border: none !important;
+}
+
+.tag--cuidado {
+    background-color: #ffe3e3 !important;
+    color: var(--cor-cuidado) !important;
+    border: none !important;
+}
+
+/* estilização do formulario com os novos inputss */
+.form-gestao select.barra-de-busca__input {
+    height: 42px;
+    background-color: white;
+}
+
+.form-acoes {
+    display: flex;
+    gap: 10px;
+}
+
+.form-gestao {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cor-texto-secundario);
+}
+
+.form-gestao .barra-de-busca__input,
+.form-gestao textarea {
+    border: 1.5px solid var(--cor-borda);
+    border-radius: 6px;
+    background-color: var(--cor-branco);
+    transition: all 0.2s ease;
+}
+
+.form-gestao .barra-de-busca__input:focus,
+.form-gestao textarea:focus {
+    border-color: var(--cor-azul-secundario);
+    box-shadow: 0 0 0 3px var(--cor-azul-terciario);
+    outline: none;
+}
+
+/* Fragrâncias */
+.fragrancias-selecao {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.fragrancia-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1.5px solid var(--cor-borda);
+    border-radius: 100px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: 0.2s;
+    background: white;
+}
+
+.fragrancia-option:hover {
+    border-color: var(--cor-azul-secundario);
+}
+
+.fragrancia-option.selected {
+    background-color: var(--cor-azul-terciario);
+    border-color: var(--cor-azul-principal);
+    color: var(--cor-azul-principal);
+}
+
+/* Imagem dos produtos */
+.image-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    background: var(--cor-background-cinza);
+    border-radius: 8px;
+    border: 1px dashed var(--cor-borda);
+}
+
+.preview-img-form {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: white;
+    border: 1px solid var(--cor-borda);
+}

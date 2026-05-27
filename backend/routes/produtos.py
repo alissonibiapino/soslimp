@@ -12,7 +12,8 @@ from services.produtos_services import (
       cadastrar_novo_produto,
       editar_produto,
       listar_categorias,
-      listar_produtos_recomendados
+      listar_produtos_recomendados,
+      listar_fragrancias
 )
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
@@ -31,6 +32,10 @@ def get_produtos():
 def get_categorias():
      return listar_categorias()
 
+@router.get("/fragrancias")
+def get_fragrancias():
+     return listar_fragrancias()
+
 @router.get("/{produto_id}")
 def get_produto(produto_id: int):
       return buscar_produto(produto_id)
@@ -46,6 +51,7 @@ async def post_cadastrar_novo_produto(
      descricao: str = Form(...),
      preco_unitario: float = Form(...),
      cod_categoria: int = Form(...),
+     fragrancias: Optional[str] = Form("[]"), # Recebe como string JSON do FormData
      imagem: Optional[UploadFile] = File(None)
 ):
      url_imagem = None
@@ -66,7 +72,8 @@ async def post_cadastrar_novo_produto(
           "preco_unitario": preco_unitario,
           "cod_categoria": cod_categoria,
           "url_imagem": url_imagem,
-          "ativo": True
+          "ativo": True,
+          "fragrancias": eval(fragrancias) # Converte string "[1,2]" para lista
      }
 
      try:
@@ -88,6 +95,7 @@ async def put_atualizar_produto(
     preco_unitario: float = Form(...),
     cod_categoria: int = Form(...),
     ativo: bool = Form(...),
+    fragrancias: Optional[str] = Form("[]"),
     url_imagem_atual: Optional[str] = Form(None),
     imagem: Optional[UploadFile] = File(None)
 ):
@@ -111,7 +119,8 @@ async def put_atualizar_produto(
                 "preco_unitario": preco_unitario,
                 "cod_categoria": cod_categoria,
                 "url_imagem": url_final,
-                "ativo": ativo
+                "ativo": ativo,
+                "fragrancias": eval(fragrancias)
             }
 
             id_atualizado = editar_produto(cod_produto, dados_dict)

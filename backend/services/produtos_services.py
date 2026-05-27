@@ -55,6 +55,8 @@ def buscar_produto(produto_id: int):
                 p.preco_unitario AS preco,
                 p.url_imagem,
                 p.ativo,
+                p.descricao,
+                p.cod_categoria,
                 COALESCE(
                     json_agg(
                         json_build_object(
@@ -106,6 +108,21 @@ def listar_categorias():
         cur.close()
         conn.close()
 
+def listar_fragrancias():
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute("SELECT cod_fragrancia, nome_fragrancia FROM fragrancia ORDER BY nome_fragrancia;")
+        fragrancias = cur.fetchall()
+        return fragrancias
+    except Exception as e:
+        conn.rollback()
+        print(f"Erro no banco: {e}")
+        return []
+    finally:
+        cur.close()
+        conn.close()
+
 def listar_produtos_por_categoria(categoria_id: int):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -118,6 +135,8 @@ def listar_produtos_por_categoria(categoria_id: int):
                 p.marca,
                 p.preco_unitario,
                 p.url_imagem,
+                p.ativo,
+                c.categoria_produto,
                 COALESCE(
                     json_agg(
                         json_build_object(
@@ -131,7 +150,7 @@ def listar_produtos_por_categoria(categoria_id: int):
             LEFT JOIN produto_fragrancia pf ON p.cod_produto = pf.cod_produto
             LEFT JOIN fragrancia f ON pf.cod_fragrancia = f.cod_fragrancia
             WHERE c.cod_categoria = %s
-            GROUP BY p.cod_produto
+            GROUP BY p.cod_produto, c.cod_categoria
             """, (categoria_id,))
         produtos = cur.fetchall()
         return produtos
@@ -169,6 +188,13 @@ def cadastrar_novo_produto(dados_do_produto):
 
         resultado = cur.fetchone()
         novo_id = resultado['cod_produto']
+
+        fragrancias = dados_do_produto.get('fragrancias', [])
+        for f_id in fragrancias:
+            cur.execute(
+                "INSERT INTO produto_fragrancia (cod_produto, cod_fragrancia) VALUES (%s, %s)",
+                (novo_id, f_id)
+            )
 
         conn.commit()
         return novo_id
@@ -208,6 +234,14 @@ def editar_produto(cod_produto, dados_novos):
         if not resultado:
             return None
         
+        fragrancias = dados_novos.get('fragrancias', [])
+        cur.execute("DELETE FROM produto_fragrancia WHERE cod_produto = %s", (cod_produto,))
+        for f_id in fragrancias:
+            cur.execute(
+                "INSERT INTO produto_fragrancia (cod_produto, cod_fragrancia) VALUES (%s, %s)",
+                (cod_produto, f_id)
+            )
+
         conn.commit()
         return resultado['cod_produto']
     
