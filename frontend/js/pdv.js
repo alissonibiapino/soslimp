@@ -91,6 +91,10 @@ async function carregarProdutos(categoriaId = null) {
         produtos.forEach(prod => {
             const article = document.createElement('article');
             article.className = 'produto-card';
+            
+            if (!prod.ativo) {
+                article.classList.add('produto-card--inativo');
+            }
 
             article.innerHTML = `
                 <div class="produto-card__imagem_box">
@@ -112,7 +116,10 @@ async function carregarProdutos(categoriaId = null) {
                 </div>
             `;
 
-            article.addEventListener('click', () => adicionarAoCarrinho(prod));
+            // Adiciona o evento de clique apenas se o produto estiver ativo
+            if (prod.ativo) {
+                article.addEventListener('click', () => adicionarAoCarrinho(prod));
+            }
             produtos_grid.appendChild(article)
 
         });
@@ -180,7 +187,7 @@ function adicionarAoCarrinho(produto, isRecomendacao = false) {
             preco: produto.preco_unitario,
             marca: produto.marca || 'SOSLimp',
             quantidade: 1,
-            cod_fragrancia: (produto.fragrancias && produto.fragrancias.length > 0) ? produto.fragrancias[0].cod_fragrancia : null,
+            cod_fragrancia: (produto.fragrancias && produto.fragrancias.length > 0) ? produto.fragrancias[0].cod_fragrancia : 18,
             fragrancias: produto.fragrancias || [],
             is_recomendacao: isRecomendacao
         });

@@ -155,6 +155,10 @@ async function carregarProdutosTabela(categoriaId = null) {
             const tr = document.createElement('tr');
             const statusClass = prod.ativo ? 'tag--sucesso' : 'tag--cuidado';
             const statusText = prod.ativo ? 'Ativo' : 'Inativo';
+            
+            if (!prod.ativo) {
+                tr.classList.add('produto-row--inativo');
+            }
 
             tr.innerHTML = `
                 <td>

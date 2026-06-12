@@ -41,6 +41,7 @@ def recomendar_produtos_carrinho(produtos_carrinho: list):
         WHERE NOT p2.cod_produto IN $ids_carrinho
 
         OPTIONAL MATCH (p)-[:TEM_FRAGRANCIA]->(f:Fragrancia)<-[:TEM_FRAGRANCIA]-(p2)
+        WHERE f.cod_fragrancia <> 18
 
         WITH 
             p2,
@@ -57,4 +58,3 @@ def recomendar_produtos_carrinho(produtos_carrinho: list):
     with session:
         result = session.run(cypher, ids_carrinho=produtos_carrinho)
         return [record.data() for record in result]
-

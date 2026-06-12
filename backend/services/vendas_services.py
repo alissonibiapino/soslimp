@@ -93,7 +93,13 @@ def registrar_novo_pedido(dados_do_pedido):
             prod_bd = cur.fetchone()
 
             is_recomendacao = produto.get('is_recomendacao', False)
-            cod_frag = produto.get('cod_fragrancia', 18)
+
+            cod_frag = produto.get('cod_fragrancia')
+
+            if cod_frag is None:
+                cod_frag = 18
+                
+            # cod_frag = produto.get('cod_fragrancia', 18)
             cur.execute("""
                 SELECT nome_fragrancia
                 FROM fragrancia
