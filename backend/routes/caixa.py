@@ -4,7 +4,8 @@ from database.conn_postgres import get_conn
 from services.caixa_services import (
     caixa_atual,
     abrir_novo_caixa,
-    fechar_caixa_dia
+    fechar_caixa_dia,
+    listar_historico_caixa
 )
 
 router = APIRouter(prefix="/caixa", tags=["Caixa"])
@@ -21,3 +22,7 @@ def fechar_caixa(dados_caixa: dict = Body(...)):
 @router.get("/{cod_loja}")
 def get_produtos(cod_loja: int):
     return caixa_atual(cod_loja)
+
+@router.get("/historico/{cod_loja}")
+def get_historico(cod_loja: int):
+    return listar_historico_caixa(cod_loja)

@@ -14,11 +14,22 @@
 <body>
     <header class="menu">
         <div class="menu__esquerdo">
-            <a href="produtos.html" class="menu__info btn-gestao-link" aria-label="Gerenciar Produtos" title="Gerenciar Produtos">
+            <a href="produtos.html" class="menu__info btn-gestao-link menu-admin" aria-label="Gerenciar Produtos"
+                title="Gerenciar Produtos">
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
                 <span>Gerenciar produtos</span>
+            </a>
+
+            <a href="caixa.html" class="menu__info btn-gestao-link menu-admin" aria-label="Gerenciar Produtos"
+                title="Gerenciar Produtos">
+                <svg width="9" height="13" viewBox="0 0 6 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M2.37433 11V9.68611C1.80749 9.56389 1.31829 9.32963 0.906738 8.98333C0.495187 8.63704 0.192941 8.14815 0 7.51667L1.18717 7.05833C1.34759 7.54722 1.58567 7.91898 1.90139 8.17361C2.21711 8.42824 2.63144 8.55556 3.14439 8.55556C3.58289 8.55556 3.95465 8.46144 4.25968 8.27322C4.56471 8.085 4.71701 7.79207 4.71658 7.39444C4.71658 7.03796 4.59893 6.75543 4.36364 6.54683C4.12834 6.33824 3.58289 6.10133 2.72727 5.83611C1.80749 5.56111 1.17647 5.23274 0.834225 4.851C0.491979 4.46926 0.320856 4.00318 0.320856 3.45278C0.320856 2.79074 0.545455 2.27639 0.994652 1.90972C1.44385 1.54306 1.90374 1.33426 2.37433 1.28333V0H3.65775V1.28333C4.19251 1.36481 4.6338 1.5508 4.9816 1.84128C5.32941 2.13176 5.58331 2.48559 5.74331 2.90278L4.55615 3.39167C4.42781 3.06574 4.24599 2.8213 4.01069 2.65833C3.7754 2.49537 3.45455 2.41389 3.04813 2.41389C2.57754 2.41389 2.21925 2.5133 1.97326 2.71211C1.72727 2.91093 1.60428 3.15781 1.60428 3.45278C1.60428 3.78889 1.76471 4.0537 2.08556 4.24722C2.40642 4.44074 2.96257 4.64444 3.75401 4.85833C4.49198 5.06204 5.05091 5.38552 5.4308 5.82878C5.81069 6.27204 6.00043 6.78374 6 7.36389C6 8.08704 5.7754 8.63704 5.3262 9.01389C4.87701 9.39074 4.32086 9.625 3.65775 9.71667V11H2.37433Z"
+                        fill="#7C7C7C" />
+                </svg>
+                <span>Conferir caixa</span>
             </a>
 
             <div class="menu__info">
@@ -199,17 +210,18 @@
                         <span id="desconto">R$ 00,00</span>
                     </div>
                 </div>
-            
-            <div class="troco-pagamento-detalhes" style="display: none;">
-                <div class="input-group">
-                    <label for="dinheiro-recebido">Valor recebido (Dinheiro)</label>
-                    <input type="number" id="dinheiro-recebido" placeholder="0,00" min="0" step="0.01" class="barra-de-busca__input" />
+
+                <div class="troco-pagamento-detalhes" style="display: none;">
+                    <div class="input-group">
+                        <label for="dinheiro-recebido">Valor recebido (Dinheiro)</label>
+                        <input type="number" id="dinheiro-recebido" placeholder="0,00" min="0" step="0.01"
+                            class="barra-de-busca__input" />
+                    </div>
+                    <div class="revisao-row">
+                        <span>Troco</span>
+                        <span id="change-amount">R$ 00,00</span>
+                    </div>
                 </div>
-                <div class="revisao-row">
-                    <span>Troco</span>
-                    <span id="change-amount">R$ 00,00</span>
-                </div>
-            </div>
 
                 <div class="revisao-total-row">
                     <span class="revisao-total-texto">Total</span>

@@ -1,0 +1,51 @@
+.gestao-lista-container {
+    background: var(--cor-branco);
+    border-radius: 8px;
+    border: 1.5px solid var(--cor-borda);
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.tabela-gestao {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tabela-gestao th {
+    background: var(--cor-background-cinza);
+    padding: 12px 16px;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--cor-texto-secundario);
+    font-weight: 600;
+    border-bottom: 1px solid var(--cor-borda);
+}
+
+.tabela-gestao td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--cor-borda);
+    color: var(--cor-texto-primario);
+    font-size: 13.5px;
+}
+
+.tabela-gestao tr:last-child td {
+    border-bottom: none;
+}
+
+.tabela-gestao tr:hover {
+    background: #fafafa;
+}
+
+/* Tags de Status */
+.tag--sucesso {
+    background-color: #d3f9d8 !important;
+    color: var(--cor-sucesso) !important;
+    border: none !important;
+}
+
+.tag--cuidado {
+    background-color: #ffe3e3 !important;
+    color: var(--cor-cuidado) !important;
+    border: none !important;
+}

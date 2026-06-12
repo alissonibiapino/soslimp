@@ -488,6 +488,15 @@ document.getElementById('btn-registrar-venda').addEventListener('click', async (
     }
 })
 
+function controlarPermissoes() {
+    const cargo = localStorage.getItem('usuario_cargo');
+
+    if (cargo !== 'MICROEMPRESARIO') {
+        document.querySelectorAll('.menu-admin').forEach(item => {
+            item.style.display = 'none';
+        });
+    }
+}
 
 document.addEventListener('DOMContentLoaded', carregarCategorias);
 exibirData();
@@ -495,3 +504,4 @@ atualizarRelogio();
 setInterval(atualizarRelogio, 60000);
 carregarProdutos();
 atualizarTotais();
+controlarPermissoes();

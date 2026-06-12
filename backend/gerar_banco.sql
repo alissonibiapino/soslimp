@@ -145,7 +145,8 @@ INSERT INTO colaborador (cpf_cnpj, nome, cargo, data_admissao) VALUES
 ('525.865.362-48', 'Arthur Papadopoulos', 'VENDEDOR', '2024-02-10');
 
 INSERT INTO colaborador_login (usuario, senha_hash, cod_colaborador) VALUES 
-('well', 1234, 1);
+('well', 1234, 1),
+('carol', 1234, 2);
 
 INSERT INTO colaborador_trabalha (cod_loja, cod_colaborador) VALUES (1, 1), (1, 2), (2, 3);
 

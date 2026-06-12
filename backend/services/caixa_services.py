@@ -101,3 +101,27 @@ def caixa_atual(cod_loja):
     finally:
         cur.close()
         conn.close()
+
+def listar_historico_caixa(cod_loja: int):
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cur.execute("""
+            SELECT 
+                cod_caixa,
+                data_abertura,
+                valor_inicial,
+                valor_atual,
+                valor_final,
+                diferenca,
+                status_caixa
+            FROM caixa
+            WHERE cod_loja = %s
+            ORDER BY data_abertura DESC;
+        """, (cod_loja,))
+        return cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()
+        
