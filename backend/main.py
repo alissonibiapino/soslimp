@@ -7,6 +7,12 @@ app = FastAPI(title="SOSLimp")
 
 # Ligar o server xd
 # uvicorn main:app --reload
+# .\.venv\Scripts\Activate.ps1
+
+# para parar o postgresql local e rodar no docker
+# Stop-Service postgresql*
+# para voltar o posgresql
+# Start-Service postgresql*
 
 origins = [
     "http://127.0.0.1:5500",

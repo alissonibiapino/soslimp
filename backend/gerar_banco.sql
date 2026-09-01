@@ -708,12 +708,17 @@ BEGIN
                     -- FRAGRÂNCIA
                     --------------------------------------------------
 
-                    SELECT cod_fragrancia
-                    INTO v_fragrancia
-                    FROM produto_fragrancia
-                    WHERE cod_produto = v_prod.cod_produto
-                    ORDER BY random()
-                    LIMIT 1;
+                    SELECT COALESCE(
+                    (
+                        SELECT cod_fragrancia
+                        FROM produto_fragrancia
+                        WHERE cod_produto = v_prod.cod_produto
+                        ORDER BY random()
+                        LIMIT 1
+                    ),
+                    18
+                    )
+                    INTO v_fragrancia;
 
                     --------------------------------------------------
                     -- QUANTIDADE

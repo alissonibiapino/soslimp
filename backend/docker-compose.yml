@@ -13,7 +13,7 @@ services:
       - ./neo4j/data:/data
       - ./neo4j/logs:/logs
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   graph_db:
     image: neo4j:5.26-community
