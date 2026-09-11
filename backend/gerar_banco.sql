@@ -14,6 +14,8 @@ DROP TABLE IF EXISTS colaborador CASCADE;
 DROP TABLE IF EXISTS loja CASCADE;
 DROP TABLE IF EXISTS fragrancia CASCADE;
 DROP TABLE IF EXISTS produto_fragrancia CASCADE;
+DROP TABLE IF EXISTS estoque CASCADE;
+DROP TABLE IF EXISTS movimentacao_estoque CASCADE;
 
 -- CREATES
 CREATE TABLE loja(
@@ -276,6 +278,42 @@ LEFT JOIN produto_fragrancia pf ON pf.cod_produto = p.cod_produto
 LEFT JOIN fragrancia f ON f.cod_fragrancia = pf.cod_fragrancia
 ORDER BY p.cod_produto;
 
+
+-- criando a nova parte de estoque
+CREATE TABLE estoque (
+    cod_produto INTEGER REFERENCES produto(cod_produto),
+    cod_loja INTEGER REFERENCES loja(cod_loja),
+    quantidade_atual INTEGER NOT NULL DEFAULT 0,
+    estoque_minimo INTEGER NOT NULL DEFAULT 0,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (cod_produto, cod_loja)
+);
+
+CREATE TABLE movimentacao_estoque (
+    cod_movimentacao SERIAL PRIMARY KEY,
+    cod_produto INTEGER REFERENCES produto(cod_produto),
+    cod_loja INTEGER REFERENCES loja(cod_loja),
+    tipo_movimentacao VARCHAR(10) NOT NULL CHECK (tipo_movimentacao IN ('ENTRADA','SAIDA','AJUSTE')),
+    quantidade INTEGER NOT NULL,
+    cod_venda INTEGER REFERENCES registro_pedido(cod_venda),
+    motivo VARCHAR(100),
+    data_movimentacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- população inicial do estoque
+INSERT INTO estoque (cod_produto, cod_loja, quantidade_atual, estoque_minimo)
+SELECT 
+    p.cod_produto,
+    l.cod_loja,
+    floor(random() * 30 + 10)::INT,  -- entre 50 e 150 unidades
+    floor(random() * 10 + 10)::INT    -- mínimo entre 10 e 25
+FROM produto p
+CROSS JOIN loja l;
+
+
+
+
+
 -- POPULAÇÃO (GERADO POR IA)
 -- POPULAÇÃO REALISTA DE VENDAS
 DO
@@ -350,6 +388,16 @@ BEGIN
         v_current_month := EXTRACT(MONTH FROM v_cur_date)::INT;
 
         v_day_of_week := EXTRACT(DOW FROM v_cur_date)::INT;
+
+        IF EXTRACT(DAY FROM v_cur_date) = 1 THEN
+            UPDATE estoque
+            SET quantidade_atual = quantidade_atual + floor(random() * 20 + 10)::INT,
+                atualizado_em = v_cur_date;
+
+            INSERT INTO movimentacao_estoque (cod_produto, cod_loja, tipo_movimentacao, quantidade, motivo, data_movimentacao)
+            SELECT cod_produto, cod_loja, 'ENTRADA', floor(random() * 20 + 10)::INT, 'Reposição mensal (fornecedor)', v_cur_date
+            FROM estoque;
+        END IF;
 
         --------------------------------------------------
         -- SAZONALIDADE MENSAL
@@ -757,6 +805,14 @@ BEGIN
                             random() < v_target_recommendation_rate
                         )
                     );
+
+                    UPDATE estoque
+                    SET quantidade_atual = GREATEST(0, quantidade_atual - v_quantidade),
+                        atualizado_em = v_hora
+                    WHERE cod_produto = v_prod.cod_produto AND cod_loja = v_cod_loja;
+
+                    INSERT INTO movimentacao_estoque (cod_produto, cod_loja, tipo_movimentacao, quantidade, cod_venda, data_movimentacao)
+                    VALUES (v_prod.cod_produto, v_cod_loja, 'SAIDA', v_quantidade, v_new_cod_venda, v_hora);
 
                     --------------------------------------------------
                     -- SOMA TOTAL
