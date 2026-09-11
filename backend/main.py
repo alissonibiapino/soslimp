@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from routes import produtos, vendas, caixa, recomendacoes, autenticacao
+from routes import produtos, vendas, caixa, recomendacoes, autenticacao, estoque
 
 app = FastAPI(title="SOSLimp")
 
@@ -36,6 +36,7 @@ app.include_router(vendas.router)
 app.include_router(caixa.router)
 app.include_router(recomendacoes.router)
 app.include_router(autenticacao.router)
+app.include_router(estoque.router)
 
 @app.get('/')
 def root():
