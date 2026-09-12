@@ -84,3 +84,25 @@ def ajustar_estoque_manualmente(ajuste):
     finally:
         cur.close()
         conn.close()
+
+def listar_alertas_reposicao(cod_loja: int):
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute("""
+            SELECT e.cod_produto, p.nome_produto, e.quantidade_atual,
+                   ROUND(SUM(dp.quantidade) / 30.0, 2) AS consumo_medio_diario,
+                   ROUND(e.quantidade_atual / NULLIF(SUM(dp.quantidade) / 30.0, 0), 1) AS dias_restantes
+            FROM estoque e
+            JOIN produto p USING (cod_produto)
+            JOIN detalhes_pedido dp ON dp.cod_produto = e.cod_produto
+            JOIN registro_pedido rp ON rp.cod_venda = dp.cod_venda AND rp.cod_loja = e.cod_loja
+            WHERE e.cod_loja = %s AND rp.hora_do_registro >= CURRENT_DATE - INTERVAL '30 days'
+            GROUP BY e.cod_produto, p.nome_produto, e.quantidade_atual
+            HAVING e.quantidade_atual / NULLIF(SUM(dp.quantidade) / 30.0, 0) <= 7
+            ORDER BY dias_restantes ASC
+        """, (cod_loja,))
+        return cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()
