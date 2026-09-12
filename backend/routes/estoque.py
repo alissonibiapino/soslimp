@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body
 from database.conn_postgres import get_conn
 
-from services.estoque_services import listar_estoque_por_loja, listar_estoque, ajustar_estoque_manualmente
+from services.estoque_services import listar_estoque_por_loja, listar_estoque, ajustar_estoque_manualmente, listar_alertas_reposicao
 
 router = APIRouter(prefix="/estoque", tags=["Estoque"])
 
@@ -16,3 +16,7 @@ def get_estoque_por_loja(cod_loja: int):
 @router.post("/ajustar")
 def ajustar_estoque(ajuste: dict = Body(...)):
     return ajustar_estoque_manualmente(ajuste)
+
+@router.get("/alertas/{cod_loja}")
+def get_alertas_reposicao(cod_loja: int):
+    return listar_alertas_reposicao(cod_loja)
