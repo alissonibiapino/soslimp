@@ -171,6 +171,9 @@ def registrar_novo_pedido(dados_do_pedido):
             if not estoque_atual:
                 raise HTTPException(status_code=400, detail="Estoque insuficiente para o produto")
 
+            if estoque_atual['quantidade_atual'] < ip['qtd']:
+                raise HTTPException(status_code=400, detail=f"Estoque insuficiente para {ip['nome_produto']}")
+
             cur.execute("""
                 UPDATE estoque SET quantidade_atual = quantidade_atual - %s, atualizado_em = CURRENT_TIMESTAMP
                 WHERE cod_produto = %s AND cod_loja = %s
@@ -194,6 +197,10 @@ def registrar_novo_pedido(dados_do_pedido):
         })
 
         return cod_venda
+
+    except HTTPException:
+        conn.rollback()
+        raise
 
     except Exception as e:
         conn.rollback()
