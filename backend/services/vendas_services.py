@@ -160,6 +160,28 @@ def registrar_novo_pedido(dados_do_pedido):
             """, (dados_do_pedido['cod_caixa'], valor_total_venda, cod_venda))
 
         for ip in produtos_processados:
+                        # parte de estoque
+
+            cur.execute("""
+                SELECT quantidade_atual FROM estoque
+                WHERE cod_produto = %s AND cod_loja = %s
+            """, (ip['cod_produto'], dados_do_pedido['cod_loja']))
+            estoque_atual = cur.fetchone()
+
+            if not estoque_atual:
+                raise HTTPException(status_code=400, detail="Estoque insuficiente para o produto")
+
+            cur.execute("""
+                UPDATE estoque SET quantidade_atual = quantidade_atual - %s, atualizado_em = CURRENT_TIMESTAMP
+                WHERE cod_produto = %s AND cod_loja = %s
+            """, (ip['qtd'], ip['cod_produto'], dados_do_pedido['cod_loja']))
+
+            # movimentacao do estoque
+            cur.execute("""
+                INSERT INTO movimentacao_estoque (cod_produto, cod_loja, tipo_movimentacao, quantidade, cod_venda)
+                VALUES (%s, %s, 'SAIDA', %s, %s)
+            """, (ip['cod_produto'], dados_do_pedido['cod_loja'], ip['qtd'], cod_venda))
+
             cur.execute("""
                 INSERT INTO detalhes_pedido (cod_produto, quantidade, preco_unitario, cod_venda, cod_fragrancia, is_recomendacao)
                 VALUES (%s, %s, %s, %s, %s, %s)
