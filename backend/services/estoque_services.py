@@ -52,8 +52,28 @@ def ajustar_estoque_manualmente(ajuste):
 
     try:
         cur.execute("""
-            UPDATE estoque SET quantidade_atual = %s WHERE cod_produto = %s AND cod_loja = %s;
+            UPDATE estoque 
+            SET quantidade_atual = quantidade_atual + %s, atualizado_em = CURRENT_TIMESTAMP
+            WHERE cod_produto = %s AND cod_loja = %s
+            RETURNING quantidade_atual
         """, (ajuste["quantidade"], ajuste["cod_produto"], ajuste["cod_loja"]))
+
+        resultado = cur.fetchone()
+
+        if not resultado:
+            raise Exception("Produto ou loja não encontrado!")
+
+        cur.execute("""
+            INSERT INTO movimentacao_estoque (cod_produto, cod_loja, tipo_movimentacao, quantidade, motivo)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            ajuste["cod_produto"],
+            ajuste["cod_loja"],
+            'ENTRADA' if ajuste["quantidade"] > 0 else 'AJUSTE',
+            abs(ajuste["quantidade"]),
+            ajuste["motivo"]
+        ))
+
         conn.commit()
         return "Estoque ajustado com sucesso!"
 
