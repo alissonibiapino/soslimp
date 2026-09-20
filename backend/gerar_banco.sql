@@ -859,3 +859,80 @@ BEGIN
 
 END
 $$;
+
+-- criando o dw
+DROP SCHEMA IF EXISTS dw CASCADE;
+
+CREATE SCHEMA IF NOT EXISTS dw;
+
+-- dimensoes
+CREATE TABLE dw.dim_tempo (
+    sk_tempo SERIAL PRIMARY KEY,
+    data DATE NOT NULL UNIQUE,
+    dia INTEGER,
+    dia_semana VARCHAR(15),
+    semana_do_ano INTEGER,
+    mes INTEGER,
+    nome_mes VARCHAR(15),
+    trimestre INTEGER,
+    ano INTEGER,
+    eh_fim_de_semana BOOLEAN
+);
+
+CREATE TABLE dw.dim_produto (
+    sk_produto SERIAL PRIMARY KEY,
+    cod_produto INTEGER NOT NULL UNIQUE,
+    nome_produto VARCHAR(100),
+    marca VARCHAR(50),
+    descricao VARCHAR(200),
+    categoria_produto VARCHAR(30),
+    possui_fragrancia BOOLEAN,
+    faixa_preco VARCHAR(10),
+    ativo BOOLEAN
+);
+
+CREATE TABLE dw.dim_loja (
+    sk_loja SERIAL PRIMARY KEY,
+    cod_loja INTEGER NOT NULL UNIQUE,
+    nome_loja VARCHAR(100),
+    endereco VARCHAR(100),
+    bairro VARCHAR(50),
+    cidade VARCHAR(50),
+    cep VARCHAR(9),
+    tipo_loja VARCHAR(10)
+);
+
+CREATE TABLE dw.dim_colaborador (
+    sk_colaborador SERIAL PRIMARY KEY,
+    cod_colaborador INTEGER NOT NULL UNIQUE,
+    nome VARCHAR(100),
+    cargo VARCHAR(50),
+    data_admissao DATE,
+    tempo_de_casa_meses INTEGER,
+    situacao VARCHAR(10),
+    loja_principal VARCHAR(100)
+);
+
+CREATE TABLE dw.dim_forma_pagamento (
+    sk_forma_pagamento SERIAL PRIMARY KEY,
+    cod_forma_pag INTEGER NOT NULL UNIQUE,
+    tipo_pagamento VARCHAR(15),
+    categoria_pagamento VARCHAR(15)
+);
+
+-- fato
+CREATE TABLE dw.fato_venda_item (
+    sk_venda_item SERIAL PRIMARY KEY,
+    fk_tempo INTEGER REFERENCES dw.dim_tempo(sk_tempo),
+    fk_produto INTEGER REFERENCES dw.dim_produto(sk_produto),
+    fk_loja INTEGER REFERENCES dw.dim_loja(sk_loja),
+    fk_colaborador INTEGER REFERENCES dw.dim_colaborador(sk_colaborador),
+    fk_forma_pagamento INTEGER REFERENCES dw.dim_forma_pagamento(sk_forma_pagamento),
+    cod_venda INTEGER,
+    cod_detalhes INTEGER UNIQUE,
+    quantidade INTEGER,
+    preco_unitario_praticado DECIMAL(10,2),
+    valor_total_item DECIMAL(10,2),
+    is_recomendacao BOOLEAN,
+    turno VARCHAR(10)
+);
