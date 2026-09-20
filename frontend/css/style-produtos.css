@@ -67,6 +67,23 @@
     border: none !important;
 }
 
+.estoque-valor {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.estoque-ok {
+    color: var(--cor-sucesso);
+}
+
+.estoque-atencao {
+    color: #b45309;
+}
+
+.estoque-baixo {
+    color: var(--cor-cuidado);
+}
+
 /* estilização do formulario com os novos inputss */
 .form-gestao select.barra-de-busca__input {
     height: 42px;

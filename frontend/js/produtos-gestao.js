@@ -14,8 +14,6 @@ function atualizarRelogio() {
     document.getElementById('menu-hora').textContent = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
-
-
 // Funcionamanto da edição
 async function carregarCategorias() {
     const nav = document.getElementById('categorias-nav');
@@ -142,16 +140,33 @@ async function carregarProdutosTabela(categoriaId = null) {
     const tabelaBody = document.getElementById('tabela-produtos-body');
     if (!tabelaBody) return;
 
+    const cod_loja = localStorage.getItem('loja_id');
+
     try {
         let url = `${BASE_URL}/produtos/`;
         if (categoriaId) url = `${BASE_URL}/produtos/categoria/${categoriaId}`;
 
-        const response = await fetch(url);
-        const produtos = await response.json();
+        const [respProdutos, respEstoque] = await Promise.all([
+            fetch(url),
+            fetch(`${BASE_URL}/estoque/${cod_loja}`)
+        ]);
+
+        const produtos = await respProdutos.json();
+        const estoqueLista = await respEstoque.json();
+
+        // const response = await fetch(url);
+        // const produtos = await response.json();
+
+        const estoqueMap = new Map(estoqueLista.map(e => [e.cod_produto, e]));
         
         tabelaBody.innerHTML = '';
 
         produtos.forEach(prod => {
+            const info = estoqueMap.get(prod.cod_produto);
+            const qtd = info ? info.quantidade_atual : 0;
+            const minimo = info ? info.estoque_minimo : 0;
+            const baixo = qtd <= minimo;
+
             const tr = document.createElement('tr');
             const statusClass = prod.ativo ? 'tag--sucesso' : 'tag--cuidado';
             const statusText = prod.ativo ? 'Ativo' : 'Inativo';
@@ -171,7 +186,10 @@ async function carregarProdutosTabela(categoriaId = null) {
                 <td><span class="tag">${prod.categoria_produto || 'Geral'}</span></td>
                 <td>${prod.preco_unitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                 <td><span class="tag ${statusClass}">${statusText}</span></td>
-                <td style="text-align: right;">
+                <td>
+                    <span class="estoque-valor ${classeEstoque(qtd, minimo)}">${qtd}</span>
+                </td>
+                <td style="text-align: center;">
                     <button class="btn-icon" onclick="prepararEdicao(${prod.cod_produto})" title="Editar">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
@@ -182,6 +200,12 @@ async function carregarProdutosTabela(categoriaId = null) {
     } catch (error) {
         console.error("Erro ao carregar produtos:", error);
     }
+}
+
+function classeEstoque(qtd, minimo) {
+    if (qtd <= minimo) return 'estoque-baixo';
+    if (qtd <= minimo * 1.5) return 'estoque-atencao';
+    return 'estoque-ok';
 }
 
 async function salvarProduto(event) {
@@ -326,3 +350,40 @@ document.addEventListener('DOMContentLoaded', () => {
         btnTodas.addEventListener('click', () => selecionarCategoria(btnTodas, 'todas'));
     }
 });
+
+async function ajustarEstoque(cod_produto, nome_produto) {
+    const cod_loja = localStorage.getItem('loja_id');
+    const valor = prompt(`Ajustar estoque de "${nome_produto}"\nDigite a quantidade (use negativo para saída, ex: -5):`, "0");
+
+    if (valor === null || valor.trim() === "" || isNaN(valor)) return;
+
+    const motivo = prompt("Motivo do ajuste:", "Ajuste manual") || "Ajuste manual";
+
+    try {
+        const response = await fetch(`${BASE_URL}/estoque/ajustar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                cod_produto,
+                cod_loja: parseInt(cod_loja),
+                quantidade: parseInt(valor),
+                motivo
+            })
+        });
+
+        if (response.ok) {
+            alert("Estoque ajustado com sucesso!");
+            carregarProdutosTabela();
+        } else {
+            const erro = await response.json();
+            alert(`Erro: ${erro.detail}`);
+        }
+    } catch (error) {
+        console.error("Erro ao ajustar estoque:", error);
+    }
+}
+
+
+//                     // <button class="btn-icon" onclick="ajustarEstoque(${prod.cod_produto}, '${prod.nome_produto}')" title="Ajustar estoque">
+                    //     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                    // </button>
