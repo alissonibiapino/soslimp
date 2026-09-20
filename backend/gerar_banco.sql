@@ -936,3 +936,116 @@ CREATE TABLE dw.fato_venda_item (
     is_recomendacao BOOLEAN,
     turno VARCHAR(10)
 );
+
+
+-- dando carga no dw
+
+-- dim_temp
+INSERT INTO dw.dim_tempo (data, dia, dia_semana, semana_do_ano, mes, nome_mes, trimestre, ano, eh_fim_de_semana)
+SELECT
+    d::DATE,
+    EXTRACT(DAY FROM d)::INT,
+    CASE EXTRACT(DOW FROM d)
+        WHEN 0 THEN 'Domingo' WHEN 1 THEN 'Segunda' WHEN 2 THEN 'Terça'
+        WHEN 3 THEN 'Quarta' WHEN 4 THEN 'Quinta' WHEN 5 THEN 'Sexta' ELSE 'Sábado'
+    END,
+    EXTRACT(WEEK FROM d)::INT,
+    EXTRACT(MONTH FROM d)::INT,
+    CASE EXTRACT(MONTH FROM d)
+        WHEN 1 THEN 'Janeiro' WHEN 2 THEN 'Fevereiro' WHEN 3 THEN 'Março' WHEN 4 THEN 'Abril'
+        WHEN 5 THEN 'Maio' WHEN 6 THEN 'Junho' WHEN 7 THEN 'Julho' WHEN 8 THEN 'Agosto'
+        WHEN 9 THEN 'Setembro' WHEN 10 THEN 'Outubro' WHEN 11 THEN 'Novembro' ELSE 'Dezembro'
+    END,
+    EXTRACT(QUARTER FROM d)::INT,
+    EXTRACT(YEAR FROM d)::INT,
+    EXTRACT(DOW FROM d) IN (0,6)
+FROM generate_series(
+    (SELECT MIN(hora_do_registro)::DATE FROM registro_pedido),
+    (SELECT MAX(hora_do_registro)::DATE FROM registro_pedido),
+    '1 day'
+) AS d
+ON CONFLICT (data) DO NOTHING;
+
+SELECT * FROM dw.dim_tempo;
+
+
+-- dim_produto
+INSERT INTO dw.dim_produto (cod_produto, nome_produto, marca, descricao, categoria_produto, possui_fragrancia, faixa_preco, ativo)
+SELECT
+    p.cod_produto, p.nome_produto, p.marca, p.descricao, c.categoria_produto,
+    EXISTS (SELECT 1 FROM produto_fragrancia pf WHERE pf.cod_produto = p.cod_produto),
+    CASE WHEN p.preco_unitario <= 10 THEN 'Baixo' WHEN p.preco_unitario <= 30 THEN 'Médio' ELSE 'Alto' END,
+    p.ativo
+FROM produto p
+JOIN categoria c USING (cod_categoria)
+ON CONFLICT (cod_produto) DO NOTHING;
+
+SELECT * FROM dw.dim_produto;
+
+
+-- dim_loja
+INSERT INTO dw.dim_loja (cod_loja, nome_loja, endereco, bairro, cidade, cep, tipo_loja)
+SELECT cod_loja, nome_loja, endereco, bairro, cidade, cep, tipo_loja
+FROM loja
+ON CONFLICT (cod_loja) DO NOTHING;
+
+SELECT * FROM dw.dim_produto;
+
+
+-- dim_colaborador
+INSERT INTO dw.dim_colaborador (cod_colaborador, nome, cargo, data_admissao, tempo_de_casa_meses, situacao, loja_principal)
+SELECT
+    c.cod_colaborador, c.nome, c.cargo, c.data_admissao,
+    EXTRACT(YEAR FROM AGE(CURRENT_DATE, c.data_admissao))*12 + EXTRACT(MONTH FROM AGE(CURRENT_DATE, c.data_admissao)),
+    CASE WHEN c.data_demissao IS NULL THEN 'Ativo' ELSE 'Desligado' END,
+    l.nome_loja
+FROM colaborador c
+LEFT JOIN LATERAL (
+    SELECT lj.nome_loja FROM colaborador_trabalha ct
+    JOIN loja lj ON lj.cod_loja = ct.cod_loja
+    WHERE ct.cod_colaborador = c.cod_colaborador LIMIT 1
+) l ON true
+ON CONFLICT (cod_colaborador) DO NOTHING;
+
+SELECT * FROM dw.dim_colaborador;
+
+-- dim_forma_pagamento
+INSERT INTO dw.dim_forma_pagamento (cod_forma_pag, tipo_pagamento, categoria_pagamento)
+SELECT cod_forma_pag, tipo_pagamento,
+    CASE WHEN tipo_pagamento = 'DINHEIRO' THEN 'Físico' ELSE 'Eletrônico' END
+FROM forma_pagamento
+ON CONFLICT (cod_forma_pag) DO NOTHING;
+
+SELECT * FROM dw.dim_forma_pagamento;
+
+-- fato_venda_item
+INSERT INTO dw.fato_venda_item (
+    fk_tempo, fk_produto, fk_loja, fk_colaborador, fk_forma_pagamento,
+    cod_venda, cod_detalhes, quantidade, preco_unitario_praticado, valor_total_item,
+    is_recomendacao, turno
+)
+SELECT
+    dt.sk_tempo, dpr.sk_produto, dl.sk_loja, dc.sk_colaborador, dfp.sk_forma_pagamento,
+    rp.cod_venda, dp.cod_detalhes, dp.quantidade, dp.preco_unitario,
+    dp.quantidade * dp.preco_unitario, dp.is_recomendacao,
+    CASE
+        WHEN EXTRACT(HOUR FROM rp.hora_do_registro) BETWEEN 6 AND 11 THEN 'Manhã'
+        WHEN EXTRACT(HOUR FROM rp.hora_do_registro) BETWEEN 12 AND 17 THEN 'Tarde'
+        WHEN EXTRACT(HOUR FROM rp.hora_do_registro) BETWEEN 18 AND 23 THEN 'Noite'
+        ELSE 'Madrugada'
+    END
+FROM detalhes_pedido dp
+JOIN registro_pedido rp ON rp.cod_venda = dp.cod_venda
+JOIN dw.dim_tempo dt ON dt.data = rp.hora_do_registro::DATE
+JOIN dw.dim_produto dpr ON dpr.cod_produto = dp.cod_produto
+JOIN dw.dim_loja dl ON dl.cod_loja = rp.cod_loja
+JOIN dw.dim_colaborador dc ON dc.cod_colaborador = rp.cod_colaborador
+JOIN dw.dim_forma_pagamento dfp ON dfp.cod_forma_pag = rp.cod_forma_pag
+ON CONFLICT (cod_detalhes) DO NOTHING;
+
+SELECT * FROM dw.fato_venda_item;
+
+
+-- testar se foi direitin
+SELECT COUNT(*) FROM detalhes_pedido;
+SELECT COUNT(*) FROM dw.fato_venda_item;
