@@ -4,7 +4,8 @@ from psycopg2.extras import RealDictCursor
 
 from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
+load_dotenv(override=True)
 
 DB_HOST = os.getenv('DB_HOST')
 DB_USER = os.getenv('DB_USER')
