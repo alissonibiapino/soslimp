@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - ./gerar_banco.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/gerar_banco:/docker-entrypoint-initdb.d:ro
       - ./postgres_data:/var/lib/postgresql/data
       - ./neo4j/data:/data
       - ./neo4j/logs:/logs
