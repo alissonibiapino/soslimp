@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15
@@ -9,9 +7,7 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - ./database/gerar_banco:/docker-entrypoint-initdb.d:ro
-      - ./postgres_data:/var/lib/postgresql/data
-      - ./neo4j/data:/data
-      - ./neo4j/logs:/logs
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
 
@@ -22,6 +18,9 @@ services:
       - "7687:7687"
     environment:
       NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
 
   pgadmin:
     image: dpage/pgadmin4
@@ -30,3 +29,8 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PG_PASSWORD}
     ports:
       - "8080:80"
+
+volumes:
+  postgres_data:
+  neo4j_data:
+  neo4j_logs:
