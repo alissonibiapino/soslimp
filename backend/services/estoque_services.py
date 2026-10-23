@@ -49,11 +49,13 @@ def ajustar_estoque_manualmente(ajuste: AjusteEstoque):
 
     try:
         cur.execute("""
-            UPDATE estoque 
-            SET quantidade_atual = quantidade_atual + %s, atualizado_em = CURRENT_TIMESTAMP
-            WHERE cod_produto = %s AND cod_loja = %s
+            INSERT INTO estoque (cod_produto, cod_loja, quantidade_atual)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (cod_produto, cod_loja) DO UPDATE
+            SET quantidade_atual = estoque.quantidade_atual + EXCLUDED.quantidade_atual,
+                atualizado_em = CURRENT_TIMESTAMP
             RETURNING quantidade_atual
-        """, (ajuste.quantidade, ajuste.cod_produto, ajuste.cod_loja))
+        """, (ajuste.cod_produto, ajuste.cod_loja, ajuste.quantidade))
 
         resultado = cur.fetchone()
 

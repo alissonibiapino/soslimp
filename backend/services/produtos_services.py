@@ -198,6 +198,11 @@ def cadastrar_novo_produto(dados_do_produto):
                 (novo_id, f_id)
             )
 
+        cur.execute(
+            "INSERT INTO estoque (cod_produto, cod_loja, quantidade_atual) SELECT %s, cod_loja, 0 FROM loja",
+            (novo_id,)
+        )
+
         conn.commit()
         return novo_id
 
