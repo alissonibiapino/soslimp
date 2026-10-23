@@ -1,8 +1,12 @@
 from database.conn_postgres import get_conn
 from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
+from typing import Optional
 
-def abrir_novo_caixa(cod_loja, valor_inicial):
+from models.caixa import AberturaCaixa, Caixa, FechamentoCaixa
+
+
+def abrir_novo_caixa(dados: AberturaCaixa):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -14,7 +18,7 @@ def abrir_novo_caixa(cod_loja, valor_inicial):
             AND status_caixa = 'ABERTO'
             AND data_abertura::date = CURRENT_DATE
         """
-        cur.execute(verificar_caixa, (cod_loja,))
+        cur.execute(verificar_caixa, (dados.cod_loja,))
         caixa_existente = cur.fetchone()
 
         if caixa_existente:
@@ -29,7 +33,7 @@ def abrir_novo_caixa(cod_loja, valor_inicial):
                     cod_loja)
             VALUES (CURRENT_TIMESTAMP, %s, %s, 'ABERTO', %s)
             RETURNING cod_caixa
-        """, (valor_inicial, valor_inicial, cod_loja))
+        """, (dados.valor_inicial, dados.valor_inicial, dados.cod_loja))
 
         cod_caixa = cur.fetchone()
         conn.commit()
@@ -43,12 +47,12 @@ def abrir_novo_caixa(cod_loja, valor_inicial):
         cur.close()
         conn.close()
 
-def fechar_caixa_dia(cod_caixa, valor_fechamento):
+def fechar_caixa_dia(dados: FechamentoCaixa):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        cur.execute("SELECT valor_atual, status_caixa FROM caixa WHERE cod_caixa = %s", (cod_caixa,))
+        cur.execute("SELECT valor_atual, status_caixa FROM caixa WHERE cod_caixa = %s", (dados.cod_caixa,))
         caixa = cur.fetchone()
 
         if not caixa:
@@ -57,7 +61,7 @@ def fechar_caixa_dia(cod_caixa, valor_fechamento):
         if caixa['status_caixa'] == 'FECHADO':
             raise Exception("Este caixa já foi encerrado")
 
-        diferenca = float(valor_fechamento) - float(caixa['valor_atual'])
+        diferenca = float(dados.valor_fechamento) - float(caixa['valor_atual'])
 
         cur.execute("""
             UPDATE caixa 
@@ -65,7 +69,7 @@ def fechar_caixa_dia(cod_caixa, valor_fechamento):
                 valor_final = %s,
                 diferenca = %s
             WHERE cod_caixa = %s
-        """, (valor_fechamento, diferenca, cod_caixa,))
+        """, (dados.valor_fechamento, diferenca, dados.cod_caixa,))
 
         conn.commit()
         return {"status": "caixa fechado", "diferenca" : diferenca}
@@ -78,21 +82,19 @@ def fechar_caixa_dia(cod_caixa, valor_fechamento):
         cur.close()
         conn.close()
 
-def caixa_atual(cod_loja):
+def caixa_atual(cod_loja: int) -> Optional[Caixa]:
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         cur.execute("""
-                    SELECT
-                        cod_caixa,
-                        ROUND(valor_atual, 2) as valor_atual
+                    SELECT *
                     FROM caixa
                     WHERE cod_loja = %s
                     AND status_caixa = 'ABERTO'
                     ORDER BY data_abertura DESC LIMIT 1;""", (cod_loja,))
         caixa = cur.fetchone()
-        return caixa
+        return Caixa(**caixa) if caixa else None
 
     except Exception as e:
         conn.rollback()
@@ -102,26 +104,18 @@ def caixa_atual(cod_loja):
         cur.close()
         conn.close()
 
-def listar_historico_caixa(cod_loja: int):
+def listar_historico_caixa(cod_loja: int) -> list[Caixa]:
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         cur.execute("""
-            SELECT 
-                cod_caixa,
-                data_abertura,
-                valor_inicial,
-                valor_atual,
-                valor_final,
-                diferenca,
-                status_caixa
+            SELECT *
             FROM caixa
             WHERE cod_loja = %s
             ORDER BY data_abertura DESC;
         """, (cod_loja,))
-        return cur.fetchall()
+        return [Caixa(**caixa) for caixa in cur.fetchall()]
     finally:
         cur.close()
         conn.close()
-        

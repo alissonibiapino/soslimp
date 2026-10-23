@@ -1,4 +1,6 @@
 from fastapi import APIRouter
+
+from models.recomendacao import RecomendacaoCarrinho
 from services.recomendacoes_services import recomendar_produto, recomendar_produtos_carrinho
 
 router = APIRouter(prefix="/recomendacoes", tags=["Recomendações"])
@@ -9,6 +11,5 @@ def recomendar(cod_produto: int):
 
 
 @router.post("/carrinho")
-def recomendar_carrinho(carrinho: dict):
-    produtos_carrinho = carrinho.get("cods", [])
-    return recomendar_produtos_carrinho(produtos_carrinho)
+def recomendar_carrinho(carrinho: RecomendacaoCarrinho):
+    return recomendar_produtos_carrinho(carrinho.cods)

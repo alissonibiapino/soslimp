@@ -11,6 +11,7 @@ def listar_produtos():
             SELECT 
                 p.cod_produto,
                 p.nome_produto,
+                p.descricao,
                 p.marca,
                 p.preco_unitario,
                 p.url_imagem,
@@ -49,10 +50,10 @@ def buscar_produto(produto_id: int):
     try:
         cur.execute("""
             SELECT 
-                p.cod_produto AS id,
-                p.nome_produto AS nome,
+                p.cod_produto,
+                p.nome_produto,
                 p.marca,
-                p.preco_unitario AS preco,
+                p.preco_unitario,
                 p.url_imagem,
                 p.ativo,
                 p.descricao,
@@ -132,6 +133,7 @@ def listar_produtos_por_categoria(categoria_id: int):
             SELECT 
                 p.cod_produto,
                 p.nome_produto,
+                p.descricao,
                 p.marca,
                 p.preco_unitario,
                 p.url_imagem,

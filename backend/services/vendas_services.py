@@ -3,6 +3,8 @@ from psycopg2.extras import RealDictCursor
 from fastapi import HTTPException
 from services.neo4j_services import registrar_novo_pedido_neo4j
 
+from models.venda import NovoPedido
+
 def listar_vendas_do_dia():
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -10,11 +12,11 @@ def listar_vendas_do_dia():
     try:
         cur.execute("""
             SELECT
-                cod_venda, INITCAP(forma_pagamento.tipo_pagamento), rp.hora_do_registro, rp.valor_total
+                rp.*, INITCAP(fp.tipo_pagamento) AS tipo_pagamento
             FROM registro_pedido rp
-            INNER JOIN forma_pagamento USING (cod_forma_pag)
-            WHERE DATE(hora_do_registro) = CURRENT_DATE
-            ORDER BY hora_do_registro DESC;
+            INNER JOIN forma_pagamento fp USING (cod_forma_pag)
+            WHERE DATE(rp.hora_do_registro) = CURRENT_DATE
+            ORDER BY rp.hora_do_registro DESC;
         """)
         vendas = cur.fetchall()
         return vendas
@@ -34,11 +36,11 @@ def listar_vendas_do_dia_por_loja(cod_loja: int):
     try:
         cur.execute("""
             SELECT
-                cod_venda, INITCAP(forma_pagamento.tipo_pagamento), rp.hora_do_registro, rp.valor_total
+                rp.*, INITCAP(fp.tipo_pagamento) AS tipo_pagamento
             FROM registro_pedido rp
-            INNER JOIN forma_pagamento USING (cod_forma_pag)
-            WHERE DATE(hora_do_registro) = CURRENT_DATE AND cod_loja = %s
-            ORDER BY hora_do_registro DESC;
+            INNER JOIN forma_pagamento fp USING (cod_forma_pag)
+            WHERE DATE(rp.hora_do_registro) = CURRENT_DATE AND rp.cod_loja = %s
+            ORDER BY rp.hora_do_registro DESC;
         """, (cod_loja,))
         vendas = cur.fetchall()
         return vendas
@@ -57,9 +59,7 @@ def listar_pedidos_do_dia():
 
     try:
         cur.execute("""
-            SELECT
-                dp.cod_detalhes
-            FROM detalhes_pedido dp
+            SELECT * FROM detalhes_pedido;
         """)
         pedidos = cur.fetchall()
         return pedidos
@@ -72,7 +72,8 @@ def listar_pedidos_do_dia():
         cur.close()
         conn.close()
 
-def registrar_novo_pedido(dados_do_pedido):
+def registrar_novo_pedido(dados_do_pedido: NovoPedido):
+    dados_do_pedido = dados_do_pedido.model_dump()
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
