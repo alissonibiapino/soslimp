@@ -360,15 +360,15 @@ async function ajustarEstoque(cod_produto, nome_produto) {
     const motivo = prompt("Motivo do ajuste:", "Ajuste manual") || "Ajuste manual";
 
     try {
+        const formData = new FormData();
+        formData.append("cod_produto", cod_produto);
+        formData.append("cod_loja", parseInt(cod_loja));
+        formData.append("quantidade", parseInt(valor));
+        formData.append("motivo", motivo);
+
         const response = await fetch(`${BASE_URL}/estoque/ajustar`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                cod_produto,
-                cod_loja: parseInt(cod_loja),
-                quantidade: parseInt(valor),
-                motivo
-            })
+            body: formData
         });
 
         if (response.ok) {
