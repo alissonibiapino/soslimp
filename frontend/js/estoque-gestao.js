@@ -3,7 +3,9 @@ const BASE_URL = "http://127.0.0.1:8000";
 let produtosCache = [];
 let estoqueCache = new Map();
 let alertasCache = new Map();
+let categoriasCache = [];
 let filtroAtual = 'todos';
+let filtroCategoria = null;
 
 function exibirData() {
     const agora = new Date();
@@ -109,6 +111,42 @@ async function carregarEstoque() {
     }
 }
 
+async function carregarCategorias() {
+    const cod_loja = localStorage.getItem('loja_id');
+
+    try {
+        const resp = await fetch(`${BASE_URL}/estoque/categorias/${cod_loja}`);
+        categoriasCache = await resp.json();
+        renderizarCategorias();
+    } catch (error) {
+        console.error("Erro ao carregar categorias:", error);
+    }
+}
+
+function renderizarCategorias() {
+    const nav = document.getElementById('categorias-estoque');
+    if (!nav) return;
+
+    nav.innerHTML = categoriasCache.map(cat => {
+        const ativo = filtroCategoria === cat.cod_categoria;
+        return `
+            <button class="categoria-card${ativo ? ' active' : ''}" data-categoria="${cat.cod_categoria}"
+                    aria-pressed="${ativo}">
+                <span class="categoria-card__label">${cat.categoria_produto}</span>
+                <span class="categoria-card__count">${cat.total_produtos} itens · ${cat.total_unidades} un.</span>
+            </button>
+        `;
+    }).join('');
+}
+
+function limparFiltroCategoria() {
+    filtroCategoria = null;
+    document.querySelectorAll('#categorias-estoque .categoria-card').forEach(botao => {
+        botao.classList.remove('active');
+        botao.setAttribute('aria-pressed', 'false');
+    });
+}
+
 function atualizarContadores() {
     const contagem = { todos: 0, baixo: 0, sem: 0, ok: 0 };
 
@@ -133,7 +171,8 @@ function renderizarTabela() {
             const status = statusEstoque(posicao.qtd, posicao.minimo);
             return { prod, ...posicao, status };
         })
-        .filter(linha => filtroAtual === 'todos' || linha.status.chave === filtroAtual)
+        .filter(linha => (filtroAtual === 'todos' || linha.status.chave === filtroAtual)
+            && (!filtroCategoria || linha.prod.cod_categoria === filtroCategoria))
         .sort((a, b) => {
             const prioridade = { sem: 0, baixo: 1, ok: 2 };
             return prioridade[a.status.chave] - prioridade[b.status.chave]
@@ -287,6 +326,7 @@ async function salvarAjuste(event) {
             alert('Estoque ajustado com sucesso!');
             limparFormularioAjuste();
             carregarEstoque();
+            carregarCategorias();
         } else {
             alert('Não foi possível ajustar o estoque.');
         }
@@ -316,14 +356,36 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(atualizarRelogio, 60000);
     verificarStatusCaixa();
     carregarEstoque();
+    carregarCategorias();
 
     document.querySelectorAll('[data-filtro]').forEach(botao => {
         botao.addEventListener('click', () => {
             document.querySelectorAll('[data-filtro]').forEach(b => b.classList.remove('active'));
             botao.classList.add('active');
             filtroAtual = botao.dataset.filtro;
+
+            if (filtroAtual === 'todos') {
+                limparFiltroCategoria();
+            }
+
             renderizarTabela();
         });
+    });
+
+    document.getElementById('categorias-estoque').addEventListener('click', (event) => {
+        const botao = event.target.closest('[data-categoria]');
+        if (!botao) return;
+
+        const codCategoria = parseInt(botao.dataset.categoria);
+        filtroCategoria = filtroCategoria === codCategoria ? null : codCategoria;
+
+        document.querySelectorAll('#categorias-estoque .categoria-card').forEach(b => {
+            const ativo = parseInt(b.dataset.categoria) === filtroCategoria;
+            b.classList.toggle('active', ativo);
+            b.setAttribute('aria-pressed', String(ativo));
+        });
+
+        renderizarTabela();
     });
 
     document.getElementById('produto_ajuste').addEventListener('change', atualizarInfoEstoque);

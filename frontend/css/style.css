@@ -166,6 +166,25 @@ button {
     scrollbar-width: none;
 }
 
+#categorias-estoque {
+    scrollbar-width: thin;
+    margin-top: 12px;
+    padding-bottom: 8px;
+}
+
+#categorias-estoque::-webkit-scrollbar {
+    height: 6px;
+}
+
+#categorias-estoque::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#categorias-estoque::-webkit-scrollbar-thumb {
+    background: var(--cor-borda);
+    border-radius: 100px;
+}
+
 .categoria-card {
     flex-shrink: 0;
     display: flex;

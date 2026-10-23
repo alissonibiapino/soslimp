@@ -24,6 +24,35 @@ def listar_estoque():
         conn.close()
 
 
+def listar_categorias_estoque(cod_loja: int):
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cur.execute("""
+            SELECT
+                c.cod_categoria,
+                c.categoria_produto,
+                COUNT(p.cod_produto) AS total_produtos,
+                COALESCE(SUM(e.quantidade_atual), 0) AS total_unidades
+            FROM categoria c
+            JOIN produto p ON p.cod_categoria = c.cod_categoria
+            LEFT JOIN estoque e
+                ON e.cod_produto = p.cod_produto AND e.cod_loja = %s
+            GROUP BY c.cod_categoria, c.categoria_produto
+            ORDER BY c.categoria_produto;
+        """, (cod_loja,))
+        return cur.fetchall()
+
+    except Exception as e:
+        conn.rollback()
+        raise e
+
+    finally:
+        cur.close()
+        conn.close()
+
+
 def listar_estoque_por_loja(cod_loja: int):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)

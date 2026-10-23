@@ -1,13 +1,17 @@
 from fastapi import APIRouter, Form
 
 from models.estoque import AjusteEstoque, Estoque
-from services.estoque_services import listar_estoque_por_loja, listar_estoque, ajustar_estoque_manualmente, listar_alertas_reposicao, definir_estoque_minimo
+from services.estoque_services import listar_estoque_por_loja, listar_estoque, ajustar_estoque_manualmente, listar_alertas_reposicao, definir_estoque_minimo, listar_categorias_estoque
 
 router = APIRouter(prefix="/estoque", tags=["Estoque"])
 
 @router.get("/", response_model=list[Estoque])
 def get_listar_estoque():
     return listar_estoque()
+
+@router.get("/categorias/{cod_loja}")
+def get_categorias_estoque(cod_loja: int):
+    return listar_categorias_estoque(cod_loja)
 
 @router.get("/{cod_loja}", response_model=list[Estoque])
 def get_estoque_por_loja(cod_loja: int):
