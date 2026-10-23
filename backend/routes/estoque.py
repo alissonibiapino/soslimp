@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Form
 
 from models.estoque import AjusteEstoque, Estoque
-from services.estoque_services import listar_estoque_por_loja, listar_estoque, ajustar_estoque_manualmente, listar_alertas_reposicao
+from services.estoque_services import listar_estoque_por_loja, listar_estoque, ajustar_estoque_manualmente, listar_alertas_reposicao, definir_estoque_minimo
 
 router = APIRouter(prefix="/estoque", tags=["Estoque"])
 
@@ -27,6 +27,14 @@ def ajustar_estoque(
         motivo=motivo
     )
     return ajustar_estoque_manualmente(ajuste)
+
+@router.post("/minimo")
+def definir_minimo(
+    cod_produto: int = Form(...),
+    cod_loja: int = Form(...),
+    estoque_minimo: int = Form(..., ge=0)
+):
+    return definir_estoque_minimo(cod_produto, cod_loja, estoque_minimo)
 
 @router.get("/alertas/{cod_loja}")
 def get_alertas_reposicao(cod_loja: int):

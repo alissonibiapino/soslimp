@@ -84,6 +84,33 @@ def ajustar_estoque_manualmente(ajuste: AjusteEstoque):
         cur.close()
         conn.close()
 
+def definir_estoque_minimo(cod_produto: int, cod_loja: int, estoque_minimo: int):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("""
+            INSERT INTO estoque (cod_produto, cod_loja, quantidade_atual, estoque_minimo)
+            VALUES (%s, %s, 0, %s)
+            ON CONFLICT (cod_produto, cod_loja) DO UPDATE
+            SET estoque_minimo = EXCLUDED.estoque_minimo,
+                atualizado_em = CURRENT_TIMESTAMP
+            RETURNING estoque_minimo
+        """, (cod_produto, cod_loja, estoque_minimo))
+
+        resultado = cur.fetchone()
+        conn.commit()
+        return {"estoque_minimo": resultado[0]}
+
+    except Exception as e:
+        conn.rollback()
+        raise e
+
+    finally:
+        cur.close()
+        conn.close()
+
+
 def listar_alertas_reposicao(cod_loja: int):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)

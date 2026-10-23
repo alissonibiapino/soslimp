@@ -255,7 +255,25 @@ async function salvarProduto(event) {
         });
 
         if (response.ok) {
-            alert(cod_produto ? "Produto atualizado!" : "Produto cadastrado!");
+            let mensagem = cod_produto ? "Produto atualizado!" : "Produto cadastrado!";
+
+            if (cod_produto) {
+                const estoqueData = new FormData();
+                estoqueData.append('cod_produto', cod_produto);
+                estoqueData.append('cod_loja', localStorage.getItem('loja_id'));
+                estoqueData.append('estoque_minimo', Math.max(0, parseInt(document.getElementById('estoque_minimo').value) || 0));
+
+                const respEstoque = await fetch(`${BASE_URL}/estoque/minimo`, {
+                    method: 'POST',
+                    body: estoqueData
+                });
+
+                if (!respEstoque.ok) {
+                    mensagem = "Produto atualizado, mas o estoque mínimo não foi salvo.";
+                }
+            }
+
+            alert(mensagem);
             limparFormulario();
             carregarProdutosTabela();
             carregarCategorias();
@@ -273,6 +291,8 @@ function limparFormulario() {
     document.getElementById('imagem_produto').value = '';
     document.getElementById('preview-imagem').src = `${BASE_URL}/static/products/padrao.png`;
     document.getElementById('titulo-formulario').textContent = 'Novo produto';
+    document.getElementById('grupo-estoque-minimo').style.display = 'none';
+    document.getElementById('estoque_minimo').value = '';
     document.querySelectorAll('.fragrancia-option').forEach(el => el.classList.remove('selected'));
 }
 
@@ -304,6 +324,15 @@ async function prepararEdicao(id) {
             document.getElementById('preview-imagem').src = `${BASE_URL}${prod.url_imagem}`;
             document.getElementById('url_imagem_atual').value = prod.url_imagem;
         }
+
+        const respEstoque = await fetch(`${BASE_URL}/estoque/${localStorage.getItem('loja_id')}`);
+        const estoque = await respEstoque.json();
+        const itemEstoque = Array.isArray(estoque)
+            ? estoque.find(e => e.cod_produto === prod.cod_produto)
+            : null;
+
+        document.getElementById('estoque_minimo').value = itemEstoque ? itemEstoque.estoque_minimo : 0;
+        document.getElementById('grupo-estoque-minimo').style.display = 'flex';
 
         document.querySelectorAll('.fragrancia-option').forEach(el => {
             const fragId = parseInt(el.dataset.id);
