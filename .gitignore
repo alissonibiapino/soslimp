@@ -18,4 +18,6 @@ postgres_data/
 backend/simular_vendas.py
 simular_vendas.py
 
+backend/static/products/
+
 legacy/
