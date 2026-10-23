@@ -4,7 +4,7 @@
     background: var(--cor-branco);
     border-radius: 8px;
     border: 1.5px solid var(--cor-borda);
-    overflow: hidden;
+    overflow-x: auto;
     margin-top: 10px;
 }
 
@@ -77,11 +77,55 @@
 }
 
 .estoque-atencao {
-    color: #b45309;
+    color: var(--cor-atencao);
 }
 
 .estoque-baixo {
     color: var(--cor-cuidado);
+}
+
+/* Barra de estoque (quantidade atual x mínimo) */
+.estoque-barra {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 140px;
+}
+
+.estoque-barra__info {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.estoque-barra__minimo {
+    font-size: 11px;
+    color: var(--cor-texto-secundario);
+}
+
+.estoque-barra__trilha {
+    height: 8px;
+    border-radius: 100px;
+    background: var(--cor-background-cinza);
+    overflow: hidden;
+}
+
+.estoque-barra__preenchimento {
+    height: 100%;
+    border-radius: 100px;
+    transition: width .3s;
+}
+
+.estoque-barra__preenchimento--sem {
+    background: var(--cor-cuidado);
+}
+
+.estoque-barra__preenchimento--baixo {
+    background: var(--cor-atencao);
+}
+
+.estoque-barra__preenchimento--ok {
+    background: var(--cor-sucesso);
 }
 
 /* estilização do formulario com os novos inputss */
