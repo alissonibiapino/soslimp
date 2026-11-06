@@ -52,3 +52,9 @@ SELECT cod_detalhes::text, cod_venda::text, cod_produto::text,
        is_recomendacao::text
 FROM detalhes_pedido;
 
+
+-- Atualiza as estatísticas das tabelas RAW. Sem isso, logo após a carga o Postgres
+-- estima poucas linhas e escolhe um plano lento no join do script 06 (ficava
+-- minutos parado com ~35 mil itens de venda).
+ANALYZE raw.registro_pedido;
+ANALYZE raw.detalhes_pedido;
