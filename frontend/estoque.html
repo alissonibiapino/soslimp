@@ -50,11 +50,39 @@
             </div>
         </div>
         <div class="menu__direito">
-            <button class="btn-fechar-caixa">
-                GESTOR ESTOQUE
+            <button class="btn-retreinar" id="btn-retreinar" title="Recarregar DW e retreinar o modelo de previsão">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path d="M23 4v6h-6M1 20v-6h6" />
+                    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                </svg>
+                <span id="btn-retreinar-label">RETREINAR PREVISÃO</span>
             </button>
         </div>
     </header>
+
+    <dialog id="dialog-retreinar" class="modal-confirmacao">
+        <h2 class="modal-confirmacao__titulo">Retreinar modelo de previsão?</h2>
+        <div class="modal-confirmacao__corpo">
+            <p>O sistema vai recarregar o Data Warehouse com os dados mais recentes e treinar novamente o modelo de previsão de estoque.</p>
+            <p>Atenção:</p>
+            <ul>
+                <li>Esse processo <strong>pode demorar vários minutos</strong> e deixar o sistema lento enquanto roda.</li>
+                <li><strong>Não recomendamos fazer sempre</strong> — use quando houver bastante dado novo (por exemplo, muitas vendas registradas desde o último treino).</li>
+            </ul>
+        </div>
+        <div class="modal-confirmacao__acoes">
+            <button type="button" class="btn-modal-cancelar" id="btn-cancelar-retreino">CANCELAR</button>
+            <button type="button" class="btn-modal-confirmar" id="btn-confirmar-retreino">RETREINAR AGORA</button>
+        </div>
+    </dialog>
+
+    <div id="overlay-treino" class="overlay-loading" hidden>
+        <div class="overlay-loading__card">
+            <div class="overlay-loading__spinner" role="status" aria-live="polite"></div>
+            <p class="overlay-loading__titulo">Retreinando o modelo...</p>
+            <p class="overlay-loading__texto">Isso pode demorar alguns minutos. O sistema ficará bloqueado até o treino terminar.</p>
+        </div>
+    </div>
 
     <div class="layout">
         <main class="catalogo">

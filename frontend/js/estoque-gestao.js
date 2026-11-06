@@ -365,6 +365,65 @@ function limparFormularioAjuste() {
     atualizarInfoEstoque();
 }
 
+const btnRetreinar = document.getElementById('btn-retreinar');
+const btnRetreinarLabel = document.getElementById('btn-retreinar-label');
+const dialogRetreinar = document.getElementById('dialog-retreinar');
+const btnConfirmarRetreino = document.getElementById('btn-confirmar-retreino');
+const overlayTreino = document.getElementById('overlay-treino');
+
+async function retreinarModelo() {
+    btnRetreinar.disabled = true;
+    btnRetreinarLabel.textContent = 'TREINANDO...';
+    overlayTreino.hidden = false;
+
+    try {
+        const response = await fetch(`${BASE_URL}/previsao/treinar`, { method: 'POST' });
+
+        if (response.status === 409) {
+            alert('Já existe um treino em andamento. Aguarde alguns minutos.');
+            return;
+        }
+
+        if (!response.ok) {
+            const detalhe = await response.json().catch(() => null);
+            alert(`Falha no retreino: ${detalhe?.detail || 'erro no servidor'}.`);
+            return;
+        }
+
+        const resultado = await response.json();
+        const metricas = resultado.metricas_holdout || {};
+        alert(
+            'Modelo retreinado com sucesso!\n' +
+            `Última semana do treino: ${resultado.ultima_semana_treino}\n` +
+            `Validação (holdout de ${metricas.semanas_holdout} semanas): MAE ${Number(metricas.mae).toFixed(2)} · RMSE ${Number(metricas.rmse).toFixed(2)}`
+        );
+
+        carregarEstoque();
+    } catch (error) {
+        console.error('Erro ao retreinar modelo:', error);
+        alert('Erro de conexão ao retreinar o modelo.');
+    } finally {
+        overlayTreino.hidden = true;
+        btnRetreinar.disabled = false;
+        btnRetreinarLabel.textContent = 'RETREINAR PREVISÃO';
+    }
+}
+
+function configurarRetreino() {
+    // Ação restrita ao gestor; gated no frontend (o backend ainda expõe o endpoint sem cargo).
+    if (localStorage.getItem('usuario_cargo') !== 'MICROEMPRESARIO') {
+        btnRetreinar.style.display = 'none';
+        return;
+    }
+
+    btnRetreinar.addEventListener('click', () => dialogRetreinar.showModal());
+    document.getElementById('btn-cancelar-retreino').addEventListener('click', () => dialogRetreinar.close());
+    btnConfirmarRetreino.addEventListener('click', () => {
+        dialogRetreinar.close();
+        retreinarModelo();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -414,4 +473,5 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('produto_ajuste').addEventListener('change', atualizarInfoEstoque);
     document.getElementById('form-ajuste').addEventListener('submit', salvarAjuste);
     document.getElementById('btn-limpar-ajuste').addEventListener('click', limparFormularioAjuste);
+    configurarRetreino();
 });
