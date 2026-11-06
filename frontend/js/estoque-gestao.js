@@ -3,6 +3,7 @@ const BASE_URL = "http://127.0.0.1:8000";
 let produtosCache = [];
 let estoqueCache = new Map();
 let alertasCache = new Map();
+let previsaoCache = new Map();
 let categoriasCache = [];
 let filtroAtual = 'todos';
 let filtroCategoria = null;
@@ -84,15 +85,38 @@ function statusEstoque(qtd, minimo) {
     return { chave: 'ok', texto: 'OK', classe: 'tag--sucesso' };
 }
 
+function formatarPrevisao(codProduto) {
+    const previsao = previsaoCache.get(codProduto);
+
+    if (!previsao) {
+        return '<span style="color: var(--cor-texto-secundario);">sem previsão</span>';
+    }
+
+    if (previsao.dias_restantes == null) {
+        return '<span class="tag tag--neutro">Sem consumo</span>';
+    }
+
+    const estilos = {
+        CRITICO: { classe: 'tag--cuidado', texto: 'Crítico' },
+        ATENCAO: { classe: 'tag--neutro', texto: 'Atenção' },
+        OK: { classe: 'tag--sucesso', texto: 'OK' }
+    };
+    const estilo = estilos[previsao.risco] || estilos.OK;
+    const dias = Number(previsao.dias_restantes).toLocaleString('pt-BR', { minimumFractionDigits: 1 });
+
+    return `~${dias} dias <span class="tag ${estilo.classe}">${estilo.texto}</span>`;
+}
+
 async function carregarEstoque() {
     const tbody = document.getElementById('tabela-estoque-body');
     const cod_loja = localStorage.getItem('loja_id');
 
     try {
-        const [respProdutos, respEstoque, respAlertas] = await Promise.all([
+        const [respProdutos, respEstoque, respAlertas, respPrevisao] = await Promise.all([
             fetch(`${BASE_URL}/produtos/`),
             fetch(`${BASE_URL}/estoque/${cod_loja}`),
-            fetch(`${BASE_URL}/estoque/alertas/${cod_loja}`)
+            fetch(`${BASE_URL}/estoque/alertas/${cod_loja}`),
+            fetch(`${BASE_URL}/previsao/estoque/${cod_loja}`)
         ]);
 
         produtosCache = await respProdutos.json();
@@ -102,12 +126,20 @@ async function carregarEstoque() {
         estoqueCache = new Map(estoqueLista.map(e => [e.cod_produto, e]));
         alertasCache = new Map((Array.isArray(alertas) ? alertas : []).map(a => [a.cod_produto, a]));
 
+        // 503 = modelo ainda não treinado; a tabela continua funcionando sem previsão.
+        if (respPrevisao.ok) {
+            const previsoes = await respPrevisao.json();
+            previsaoCache = new Map(previsoes.map(p => [p.cod_produto, p]));
+        } else {
+            previsaoCache = new Map();
+        }
+
         preencherSelectProdutos();
         atualizarContadores();
         renderizarTabela();
     } catch (error) {
         console.error("Erro ao carregar estoque:", error);
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--cor-texto-secundario);">Não foi possível carregar o estoque.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--cor-texto-secundario);">Não foi possível carregar o estoque.</td></tr>';
     }
 }
 
@@ -132,6 +164,9 @@ function renderizarCategorias() {
         return `
             <button class="categoria-card${ativo ? ' active' : ''}" data-categoria="${cat.cod_categoria}"
                     aria-pressed="${ativo}">
+                <div class="categoria-card__icone">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                </div>
                 <span class="categoria-card__label">${cat.categoria_produto}</span>
                 <span class="categoria-card__count">${cat.total_produtos} itens · ${cat.total_unidades} un.</span>
             </button>
@@ -180,26 +215,18 @@ function renderizarTabela() {
         });
 
     if (!linhas.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--cor-texto-secundario);">Nenhum item neste filtro.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--cor-texto-secundario);">Nenhum item neste filtro.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = linhas.map(({ prod, qtd, minimo, atualizadoEm, status }) => {
+    tbody.innerHTML = linhas.map(({ prod, qtd, minimo, status }) => {
         const alerta = alertasCache.get(prod.cod_produto);
         const consumo = alerta && alerta.consumo_medio_diario != null
             ? Number(alerta.consumo_medio_diario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
             : '0,00';
-        const diasRestantes = alerta && alerta.dias_restantes != null
-            ? (Number(alerta.dias_restantes) > 90
-                ? '> 90 dias'
-                : `${Number(alerta.dias_restantes).toLocaleString('pt-BR', { minimumFractionDigits: 1 })} dias`)
-            : 'sem vendas 30d';
         const imagem = prod.url_imagem
             ? `${BASE_URL}${prod.url_imagem}`
             : './assets/img/logo_soslimp.png';
-        const atualizado = atualizadoEm
-            ? new Date(atualizadoEm).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
-            : '—';
         const pct = percentualEstoque(qtd, minimo);
         const qtdVisivel = Math.max(0, Number(qtd) || 0);
         const minimoVisivel = Math.max(0, Number(minimo) || 0);
@@ -212,7 +239,6 @@ function renderizarTabela() {
                         <span>${prod.nome_produto}</span>
                     </div>
                 </td>
-                <td><span class="tag">${prod.categoria_produto || 'Geral'}</span></td>
                 <td>
                     <div class="estoque-barra">
                         <div class="estoque-barra__info">
@@ -228,14 +254,11 @@ function renderizarTabela() {
                     </div>
                 </td>
                 <td>${consumo}</td>
-                <td>${diasRestantes}</td>
+                <td>${formatarPrevisao(prod.cod_produto)}</td>
                 <td><span class="tag ${status.classe}">${status.texto}</span></td>
-                <td>${atualizado}</td>
                 <td style="text-align: center;">
                     <button class="btn-icon" onclick="prepararAjuste(${prod.cod_produto})" title="Ajustar estoque">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M12 4v16m8-8H4" />
-                        </svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
                 </td>
             </tr>
