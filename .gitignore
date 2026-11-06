@@ -20,4 +20,6 @@ simular_vendas.py
 
 backend/static/products/
 
+backend/ml/artefatos/
+
 legacy/
