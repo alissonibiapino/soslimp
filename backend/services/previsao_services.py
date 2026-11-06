@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from psycopg2.extras import RealDictCursor
 
 from database.conn_postgres import get_conn
+from database.etl_dw import atualizar_dw
 from ml import modelo as ml_modelo
 from ml.dataset import montar_dataset
 from models.previsao import PrevisaoEstoque
@@ -21,6 +22,14 @@ def treinar_modelo():
         raise HTTPException(status_code=409, detail="Treino já em andamento.")
 
     try:
+        try:
+            linhas_dw = atualizar_dw()
+        except Exception as erro:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Falha ao recarregar o DW: {erro}"
+            )
+
         dados = montar_dataset()
 
         modelo, scaler = ml_modelo.treinar(
@@ -43,6 +52,7 @@ def treinar_modelo():
         )
 
         return {
+            "linhas_dw": linhas_dw,
             "linhas_treino": len(dados["y"]),
             "ultima_semana_treino": ultima_semana,
             "metricas_holdout": scaler["metricas_holdout"]
