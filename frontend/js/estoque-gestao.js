@@ -97,14 +97,14 @@ function formatarPrevisao(codProduto) {
     }
 
     const estilos = {
-        CRITICO: { classe: 'tag--cuidado', texto: 'Crítico' },
-        ATENCAO: { classe: 'tag--neutro', texto: 'Atenção' },
-        OK: { classe: 'tag--sucesso', texto: 'OK' }
+        CRITICO: { classe: 'tag--cuidado', valor: 'previsao-valor--critico', texto: 'Crítico' },
+        ATENCAO: { classe: 'tag--neutro', valor: 'previsao-valor--atencao', texto: 'Atenção' },
+        OK: { classe: 'tag--sucesso', valor: 'previsao-valor--ok', texto: 'OK' }
     };
     const estilo = estilos[previsao.risco] || estilos.OK;
     const dias = Number(previsao.dias_restantes).toLocaleString('pt-BR', { minimumFractionDigits: 1 });
 
-    return `~${dias} dias <span class="tag ${estilo.classe}">${estilo.texto}</span>`;
+    return `<strong class="previsao-valor ${estilo.valor}">~${dias} dias</strong> <span class="tag ${estilo.classe}">${estilo.texto}</span>`;
 }
 
 async function carregarEstoque() {
@@ -136,10 +136,11 @@ async function carregarEstoque() {
 
         preencherSelectProdutos();
         atualizarContadores();
+        renderizarCategorias();
         renderizarTabela();
     } catch (error) {
         console.error("Erro ao carregar estoque:", error);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--cor-texto-secundario);">Não foi possível carregar o estoque.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--cor-texto-secundario);">Não foi possível carregar o estoque.</td></tr>';
     }
 }
 
@@ -159,27 +160,38 @@ function renderizarCategorias() {
     const nav = document.getElementById('categorias-estoque');
     if (!nav) return;
 
-    nav.innerHTML = categoriasCache.map(cat => {
+    const todas = `
+        <button class="categoria-card${filtroCategoria === null ? ' active' : ''}" data-categoria="todas"
+                aria-pressed="${filtroCategoria === null}">
+            <span class="categoria-card__label">Todas categorias</span>
+            <span class="categoria-card__count">${produtosCache.length} itens</span>
+        </button>
+    `;
+    nav.innerHTML = todas + categoriasCache.map(cat => {
         const ativo = filtroCategoria === cat.cod_categoria;
         return `
             <button class="categoria-card${ativo ? ' active' : ''}" data-categoria="${cat.cod_categoria}"
                     aria-pressed="${ativo}">
-                <div class="categoria-card__icone">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-                </div>
                 <span class="categoria-card__label">${cat.categoria_produto}</span>
-                <span class="categoria-card__count">${cat.total_produtos} itens · ${cat.total_unidades} un.</span>
+                <span class="categoria-card__count">${cat.total_produtos} itens</span>
             </button>
         `;
     }).join('');
 }
 
+function atualizarAtivosCategorias() {
+    document.querySelectorAll('#categorias-estoque .categoria-card').forEach(b => {
+        const ativo = b.dataset.categoria === 'todas'
+            ? filtroCategoria === null
+            : parseInt(b.dataset.categoria) === filtroCategoria;
+        b.classList.toggle('active', ativo);
+        b.setAttribute('aria-pressed', String(ativo));
+    });
+}
+
 function limparFiltroCategoria() {
     filtroCategoria = null;
-    document.querySelectorAll('#categorias-estoque .categoria-card').forEach(botao => {
-        botao.classList.remove('active');
-        botao.setAttribute('aria-pressed', 'false');
-    });
+    atualizarAtivosCategorias();
 }
 
 function atualizarContadores() {
@@ -195,6 +207,9 @@ function atualizarContadores() {
     document.getElementById('count-baixo').textContent = `${contagem.baixo} itens`;
     document.getElementById('count-sem').textContent = `${contagem.sem} itens`;
     document.getElementById('count-ok').textContent = `${contagem.ok} itens`;
+
+    document.getElementById('count-baixo').classList.toggle('count-alerta', contagem.baixo > 0);
+    document.getElementById('count-sem').classList.toggle('count-alerta', contagem.sem > 0);
 }
 
 function renderizarTabela() {
@@ -209,13 +224,19 @@ function renderizarTabela() {
         .filter(linha => (filtroAtual === 'todos' || linha.status.chave === filtroAtual)
             && (!filtroCategoria || linha.prod.cod_categoria === filtroCategoria))
         .sort((a, b) => {
-            const prioridade = { sem: 0, baixo: 1, ok: 2 };
-            return prioridade[a.status.chave] - prioridade[b.status.chave]
+            // Sem estoque no topo mesmo sem previsão; depois urgência ML; desempate alfabético.
+            const blocos = l => l.status.chave === 'sem' ? 0 : 1;
+            const dias = l => {
+                const previsao = previsaoCache.get(l.prod.cod_produto);
+                return previsao?.dias_restantes != null ? previsao.dias_restantes : Number.MAX_SAFE_INTEGER;
+            };
+            return blocos(a) - blocos(b)
+                || dias(a) - dias(b)
                 || a.prod.nome_produto.localeCompare(b.prod.nome_produto);
         });
 
     if (!linhas.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--cor-texto-secundario);">Nenhum item neste filtro.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--cor-texto-secundario);">Nenhum item neste filtro.</td></tr>';
         return;
     }
 
@@ -253,9 +274,8 @@ function renderizarTabela() {
                         </div>
                     </div>
                 </td>
-                <td>${consumo}</td>
+                <td class="consumo-dia">${consumo}</td>
                 <td>${formatarPrevisao(prod.cod_produto)}</td>
-                <td><span class="tag ${status.classe}">${status.texto}</span></td>
                 <td style="text-align: center;">
                     <button class="btn-icon" onclick="prepararAjuste(${prod.cod_produto})" title="Ajustar estoque">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -308,6 +328,7 @@ function atualizarInfoEstoque() {
 function prepararAjuste(codProduto) {
     document.getElementById('produto_ajuste').value = codProduto;
     atualizarInfoEstoque();
+    document.getElementById('dialog-ajuste').showModal();
     document.getElementById('quantidade_ajuste').focus();
 }
 
@@ -352,14 +373,14 @@ async function salvarAjuste(event) {
             carregarCategorias();
         } else {
             alert('Não foi possível ajustar o estoque.');
-        }
-    } catch (error) {
+        }    } catch (error) {
         console.error('Erro ao ajustar estoque:', error);
         alert('Erro ao ajustar estoque.');
     }
 }
 
 function limparFormularioAjuste() {
+    document.getElementById('dialog-ajuste').close();
     document.getElementById('form-ajuste').reset();
     document.getElementById('motivo_ajuste').value = 'Ajuste manual';
     atualizarInfoEstoque();
@@ -458,15 +479,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const botao = event.target.closest('[data-categoria]');
         if (!botao) return;
 
-        const codCategoria = parseInt(botao.dataset.categoria);
-        filtroCategoria = filtroCategoria === codCategoria ? null : codCategoria;
+        const raw = botao.dataset.categoria;
+        const codCategoria = raw === 'todas' ? null : parseInt(raw);
+        filtroCategoria = (codCategoria !== null && filtroCategoria === codCategoria) ? null : codCategoria;
 
-        document.querySelectorAll('#categorias-estoque .categoria-card').forEach(b => {
-            const ativo = parseInt(b.dataset.categoria) === filtroCategoria;
-            b.classList.toggle('active', ativo);
-            b.setAttribute('aria-pressed', String(ativo));
-        });
-
+        atualizarAtivosCategorias();
         renderizarTabela();
     });
 

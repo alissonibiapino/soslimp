@@ -222,3 +222,50 @@
     background: white;
     border: 1px solid var(--cor-borda);
 }
+
+/* Estoque: layout sem sidebar */
+.layout--full {
+    grid-template-columns: 1fr;
+}
+
+/* Status de estoque: os 4 cartões dividem a fileira igualmente */
+#filtros-estoque {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+/* Dialog de ajuste de estoque */
+.dialog-ajuste .form-gestao {
+    margin-top: 14px;
+}
+
+/* Valor de dias restantes colorido pelo risco */
+.previsao-valor {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.previsao-valor--critico {
+    color: var(--cor-cuidado);
+}
+
+.previsao-valor--atencao {
+    color: var(--cor-atencao);
+}
+
+.previsao-valor--ok {
+    color: var(--cor-sucesso);
+}
+
+/* Consumo/dia é detalhe de suporte */
+.consumo-dia {
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+}
+
+/* Contador de alerta nos cards de filtro */
+.count-alerta {
+    color: var(--cor-cuidado);
+    font-weight: 600;
+}
