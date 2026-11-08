@@ -1,0 +1,14 @@
+{
+  "seed": 60,
+  "data_inicio": "2020-01-01",
+  "data_fim": "2026-11-03",
+  "data_abertura_loja_2": "2023-11-03",
+  "gama_preco_calibrado": 0.6902,
+  "base_pedidos_dia": 21.067,
+  "choque_semanal_sigma": 0.12,
+  "modelo_choque_semanal": "lognormal_independente_por_loja_semana",
+  "inicio_semana": "segunda-feira",
+  "pedidos": 33950,
+  "itens": 42841,
+  "vendas_perdidas": 558
+}

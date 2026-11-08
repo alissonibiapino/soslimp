@@ -23,3 +23,5 @@ backend/static/products/
 backend/ml/artefatos/
 
 legacy/
+
+backend/database/gerar_banco/dados/*.csv
