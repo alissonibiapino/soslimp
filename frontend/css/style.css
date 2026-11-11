@@ -1011,6 +1011,15 @@ button {
     background: var(--cor-atencao);
 }
 
+.toast--erro {
+    border-left-color: var(--cor-cuidado);
+}
+
+.toast--erro::before {
+    content: '×';
+    background: var(--cor-cuidado);
+}
+
 .toast--saindo {
     animation: toast-sair .2s ease-in forwards;
 }

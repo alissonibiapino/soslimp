@@ -476,9 +476,15 @@ document.getElementById('btn-registrar-venda').addEventListener('click', async (
             
             // Atualizar o valor do caixa no menu superior
             verificarStatusCaixa();
+        } else {
+            const detalhe = await response.json().catch(() => null);
+            mostrarToast(
+                typeof detalhe?.detail === 'string' ? detalhe.detail : 'Não foi possível finalizar a venda.',
+                'erro'
+            );
         }
     } catch (error) {
-        alert('Venda não efetuada')
+        mostrarToast('Não foi possível finalizar a venda.', 'erro');
         console.error("Erro ao efetuar pedido:", error)
     }
 })
