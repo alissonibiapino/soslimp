@@ -129,7 +129,7 @@ def definir_estoque_minimo(cod_produto: int, cod_loja: int, estoque_minimo: int)
 
         resultado = cur.fetchone()
         conn.commit()
-        return {"estoque_minimo": resultado[0]}
+        return {"estoque_minimo": resultado["estoque_minimo"]}
 
     except Exception as e:
         conn.rollback()
