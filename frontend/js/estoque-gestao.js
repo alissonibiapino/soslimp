@@ -367,7 +367,7 @@ async function salvarAjuste(event) {
         const resultado = await response.json();
 
         if (resultado) {
-            alert('Estoque ajustado com sucesso!');
+            mostrarToast('Estoque ajustado com sucesso!');
             limparFormularioAjuste();
             carregarEstoque();
             carregarCategorias();

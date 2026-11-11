@@ -253,6 +253,7 @@ async function salvarProduto(event) {
 
         if (response.ok) {
             let mensagem = cod_produto ? "Produto atualizado!" : "Produto cadastrado!";
+            let aviso = false;
 
             if (cod_produto) {
                 const estoqueData = new FormData();
@@ -267,10 +268,11 @@ async function salvarProduto(event) {
 
                 if (!respEstoque.ok) {
                     mensagem = "Produto atualizado, mas o estoque mínimo não foi salvo.";
+                    aviso = true;
                 }
             }
 
-            alert(mensagem);
+            mostrarToast(mensagem, aviso ? 'aviso' : 'sucesso');
             limparFormulario();
             carregarProdutosTabela();
             carregarCategorias();
@@ -398,7 +400,7 @@ async function ajustarEstoque(cod_produto, nome_produto) {
         });
 
         if (response.ok) {
-            alert("Estoque ajustado com sucesso!");
+            mostrarToast("Estoque ajustado com sucesso!");
             carregarProdutosTabela();
         } else {
             const erro = await response.json();

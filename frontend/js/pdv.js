@@ -465,7 +465,7 @@ document.getElementById('btn-registrar-venda').addEventListener('click', async (
             })
         });
         if (response.ok) {
-            alert('Venda efetuada com sucesso!');
+            mostrarToast('Venda efetuada com sucesso!');
             
             // Limpar PDV após a venda
             carrinho = [];

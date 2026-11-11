@@ -955,3 +955,80 @@ button {
 .produto-row--inativo {
     opacity: 0.6; /* Torna a linha mais apagada */
 }
+
+/* Fade dos itens recriados ao filtrar por categoria */
+@keyframes aparecer-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.produto-card:not(.produto-card--inativo),
+.tabela-gestao tbody tr:not(.produto-row--inativo) {
+    animation: aparecer-fade .2s ease-out;
+}
+
+/* Toast de feedback das ações (venda, produto, estoque) */
+.toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 360px;
+    padding: 14px 20px;
+    border-left: 4px solid var(--cor-sucesso);
+    border-radius: 8px;
+    background: var(--cor-branco);
+    box-shadow: var(--sombra-padrao);
+    color: var(--cor-texto-primario);
+    font-family: var(--fonte-poppins-light);
+    font-size: 14px;
+    animation: toast-entrar .25s ease-out;
+}
+
+.toast::before {
+    content: '✓';
+    display: grid;
+    place-items: center;
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--cor-sucesso);
+    color: var(--cor-branco);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.toast--aviso {
+    border-left-color: var(--cor-atencao);
+}
+
+.toast--aviso::before {
+    content: '!';
+    background: var(--cor-atencao);
+}
+
+.toast--saindo {
+    animation: toast-sair .2s ease-in forwards;
+}
+
+@keyframes toast-entrar {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toast-sair {
+    to { opacity: 0; transform: translateY(8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .produto-card,
+    .tabela-gestao tbody tr,
+    .toast,
+    .toast--saindo {
+        animation: none;
+    }
+}
