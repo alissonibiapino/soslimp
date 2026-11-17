@@ -3,8 +3,11 @@ from database.conn_postgres import get_conn
 import os
 import uuid
 import shutil
+import json
 from typing import Optional
 
+from models.produto import ProdutoCreate, ProdutoUpdate
+from models.recomendacao import RecomendacaoCarrinho
 from services.produtos_services import (
       listar_produtos,
       buscar_produto,
@@ -65,16 +68,17 @@ async def post_cadastrar_novo_produto(
                shutil.copyfileobj(imagem.file, buffer)
           url_imagem = f"/{UPLOAD_DIR}/{nome_arquivo}"
 
-     produto_dict = {
-          "nome_produto": nome_produto,
-          "marca": marca,
-          "descricao": descricao,
-          "preco_unitario": preco_unitario,
-          "cod_categoria": cod_categoria,
-          "url_imagem": url_imagem,
-          "ativo": True,
-          "fragrancias": eval(fragrancias) # Converte string "[1,2]" para lista
-     }
+     produto = ProdutoCreate(
+          cod_categoria=cod_categoria,
+          nome_produto=nome_produto,
+          descricao=descricao,
+          marca=marca,
+          preco_unitario=preco_unitario,
+          url_imagem=url_imagem,
+          ativo=True
+     )
+     produto_dict = produto.model_dump()
+     produto_dict["fragrancias"] = json.loads(fragrancias)
 
      try:
          id_gerado = cadastrar_novo_produto(produto_dict)
@@ -112,16 +116,18 @@ async def put_atualizar_produto(
                     shutil.copyfileobj(imagem.file, buffer)
                 url_final = f"/{UPLOAD_DIR}/{nome_arquivo}"
 
-            dados_dict = {
-                "nome_produto": nome_produto,
-                "marca": marca,
-                "descricao": descricao,
-                "preco_unitario": preco_unitario,
-                "cod_categoria": cod_categoria,
-                "url_imagem": url_final,
-                "ativo": ativo,
-                "fragrancias": eval(fragrancias)
-            }
+            produto = ProdutoUpdate(
+                cod_produto=cod_produto,
+                cod_categoria=cod_categoria,
+                nome_produto=nome_produto,
+                descricao=descricao,
+                marca=marca,
+                preco_unitario=preco_unitario,
+                url_imagem=url_final,
+                ativo=ativo
+            )
+            dados_dict = produto.model_dump()
+            dados_dict["fragrancias"] = json.loads(fragrancias)
 
             id_atualizado = editar_produto(cod_produto, dados_dict)
 
@@ -136,6 +142,5 @@ async def put_atualizar_produto(
             raise HTTPException(status_code=500, detail=f"Erro ao atualizar produto: {str(e)}")
       
 @router.post("/produtos_recomendados")
-def get_produtos_recomendados(carrinho: dict):
-     produtos_carrinho = carrinho.get("cods", [])
-     return listar_produtos_recomendados(produtos_carrinho)
+def get_produtos_recomendados(carrinho: RecomendacaoCarrinho):
+     return listar_produtos_recomendados(carrinho.cods)

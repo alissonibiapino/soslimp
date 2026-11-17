@@ -60,12 +60,6 @@
         <main class="catalogo">
             <nav class="categorias" id="categorias-nav">
                 <button class="categoria-card active" data-category="todas">
-                    <div class="categoria-card__icone">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <rect x="2" y="7" width="20" height="14" rx="2" />
-                            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-                        </svg>
-                    </div>
                     <span class="categoria-card__label">Todas categorias</span>
                     <span class="categoria-card__count" id="total-count">... itens</span>
                 </button>
@@ -80,7 +74,8 @@
                             <th>Categoria</th>
                             <th>Preço</th>
                             <th>Status</th>
-                            <th style="text-align: right;">Ações</th>
+                            <th>Estoque</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-produtos-body">
@@ -126,6 +121,11 @@
                         <input type="number" id="preco_produto" step="0.01" class="barra-de-busca__input" required>
                     </div>
 
+                    <div class="input-group" id="grupo-estoque-minimo" style="display: none;">
+                        <label for="estoque_minimo">Estoque Mínimo</label>
+                        <input type="number" id="estoque_minimo" min="0" step="1" class="barra-de-busca__input">
+                    </div>
+
                     <div class="input-group">
                         <label>Fragrâncias</label>
                         <div id="lista-fragrancias" class="fragrancias-selecao">
@@ -155,6 +155,7 @@
         </aside>
     </div>
 
+    <script src="./js/toast.js"></script>
     <script src="./js/produtos-gestao.js"></script>
 </body>
 </html>

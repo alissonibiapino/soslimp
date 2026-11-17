@@ -1,0 +1,162 @@
+from database.conn_postgres import get_conn
+from psycopg2.extras import RealDictCursor
+from fastapi import HTTPException
+
+from models.estoque import AjusteEstoque
+
+def listar_estoque():
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cur.execute("""
+            SELECT * FROM estoque;
+        """)
+        estoque = cur.fetchall()
+        return estoque
+
+    except Exception as e:
+        conn.rollback()
+        return print(f"Erro no banco: {e}")
+    
+    finally:
+        cur.close()
+        conn.close()
+
+
+def listar_categorias_estoque(cod_loja: int):
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cur.execute("""
+            SELECT
+                c.cod_categoria,
+                c.categoria_produto,
+                COUNT(p.cod_produto) AS total_produtos,
+                COALESCE(SUM(e.quantidade_atual), 0) AS total_unidades
+            FROM categoria c
+            JOIN produto p ON p.cod_categoria = c.cod_categoria
+            LEFT JOIN estoque e
+                ON e.cod_produto = p.cod_produto AND e.cod_loja = %s
+            GROUP BY c.cod_categoria, c.categoria_produto
+            ORDER BY c.categoria_produto;
+        """, (cod_loja,))
+        return cur.fetchall()
+
+    except Exception as e:
+        conn.rollback()
+        raise e
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+def listar_estoque_por_loja(cod_loja: int):
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cur.execute("""
+            SELECT * FROM estoque WHERE cod_loja = %s;
+        """, (cod_loja,))
+        estoque = cur.fetchall()
+        return estoque
+
+    except Exception as e:
+        conn.rollback()
+        return print(f"Erro no banco: {e}")
+    
+    finally:
+        cur.close()
+        conn.close()
+
+def ajustar_estoque_manualmente(ajuste: AjusteEstoque):
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cur.execute("""
+            INSERT INTO estoque (cod_produto, cod_loja, quantidade_atual)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (cod_produto, cod_loja) DO UPDATE
+            SET quantidade_atual = estoque.quantidade_atual + EXCLUDED.quantidade_atual,
+                atualizado_em = CURRENT_TIMESTAMP
+            RETURNING quantidade_atual
+        """, (ajuste.cod_produto, ajuste.cod_loja, ajuste.quantidade))
+
+        resultado = cur.fetchone()
+
+        if not resultado:
+            raise Exception("Produto ou loja não encontrado!")
+
+        cur.execute("""
+            INSERT INTO movimentacao_estoque (cod_produto, cod_loja, tipo_movimentacao, quantidade, motivo)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            ajuste.cod_produto,
+            ajuste.cod_loja,
+            'ENTRADA' if ajuste.quantidade > 0 else 'AJUSTE',
+            abs(ajuste.quantidade),
+            ajuste.motivo
+        ))
+
+        conn.commit()
+        return "Estoque ajustado com sucesso!"
+
+    except Exception as e:
+        conn.rollback()
+        return print(f"Erro no banco: {e}")
+    
+    finally:
+        cur.close()
+        conn.close()
+
+def definir_estoque_minimo(cod_produto: int, cod_loja: int, estoque_minimo: int):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("""
+            INSERT INTO estoque (cod_produto, cod_loja, quantidade_atual, estoque_minimo)
+            VALUES (%s, %s, 0, %s)
+            ON CONFLICT (cod_produto, cod_loja) DO UPDATE
+            SET estoque_minimo = EXCLUDED.estoque_minimo,
+                atualizado_em = CURRENT_TIMESTAMP
+            RETURNING estoque_minimo
+        """, (cod_produto, cod_loja, estoque_minimo))
+
+        resultado = cur.fetchone()
+        conn.commit()
+        return {"estoque_minimo": resultado["estoque_minimo"]}
+
+    except Exception as e:
+        conn.rollback()
+        raise e
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+def listar_alertas_reposicao(cod_loja: int):
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute("""
+            SELECT e.cod_produto, p.nome_produto, e.quantidade_atual,
+                   ROUND(SUM(dp.quantidade) / 30.0, 2) AS consumo_medio_diario,
+                   ROUND(GREATEST(e.quantidade_atual, 0) / NULLIF(SUM(dp.quantidade) / 30.0, 0), 1) AS dias_restantes
+            FROM estoque e
+            JOIN produto p USING (cod_produto)
+            JOIN detalhes_pedido dp ON dp.cod_produto = e.cod_produto
+            JOIN registro_pedido rp ON rp.cod_venda = dp.cod_venda AND rp.cod_loja = e.cod_loja
+            WHERE e.cod_loja = %s AND rp.hora_do_registro >= CURRENT_DATE - INTERVAL '29 days'
+            GROUP BY e.cod_produto, p.nome_produto, e.quantidade_atual
+            ORDER BY dias_restantes ASC
+        """, (cod_loja,))
+        return cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()

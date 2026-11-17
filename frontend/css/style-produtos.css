@@ -4,7 +4,7 @@
     background: var(--cor-branco);
     border-radius: 8px;
     border: 1.5px solid var(--cor-borda);
-    overflow: hidden;
+    overflow-x: auto;
     margin-top: 10px;
 }
 
@@ -65,6 +65,67 @@
     background-color: #ffe3e3 !important;
     color: var(--cor-cuidado) !important;
     border: none !important;
+}
+
+.estoque-valor {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.estoque-ok {
+    color: var(--cor-sucesso);
+}
+
+.estoque-atencao {
+    color: var(--cor-atencao);
+}
+
+.estoque-baixo {
+    color: var(--cor-cuidado);
+}
+
+/* Barra de estoque (quantidade atual x mínimo) */
+.estoque-barra {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 140px;
+}
+
+.estoque-barra__info {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.estoque-barra__minimo {
+    font-size: 11px;
+    color: var(--cor-texto-secundario);
+}
+
+.estoque-barra__trilha {
+    height: 8px;
+    border-radius: 100px;
+    background: var(--cor-background-cinza);
+    overflow: hidden;
+}
+
+.estoque-barra__preenchimento {
+    height: 100%;
+    border-radius: 100px;
+    transition: width .3s;
+}
+
+.estoque-barra__preenchimento--sem {
+    background: var(--cor-cuidado);
+}
+
+.estoque-barra__preenchimento--baixo {
+    background: var(--cor-atencao);
+}
+
+.estoque-barra__preenchimento--ok {
+    background: var(--cor-sucesso);
 }
 
 /* estilização do formulario com os novos inputss */
@@ -160,4 +221,51 @@
     border-radius: 4px;
     background: white;
     border: 1px solid var(--cor-borda);
+}
+
+/* Estoque: layout sem sidebar */
+.layout--full {
+    grid-template-columns: 1fr;
+}
+
+/* Status de estoque: os 4 cartões dividem a fileira igualmente */
+#filtros-estoque {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+/* Dialog de ajuste de estoque */
+.dialog-ajuste .form-gestao {
+    margin-top: 14px;
+}
+
+/* Valor de dias restantes colorido pelo risco */
+.previsao-valor {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.previsao-valor--critico {
+    color: var(--cor-cuidado);
+}
+
+.previsao-valor--atencao {
+    color: var(--cor-atencao);
+}
+
+.previsao-valor--ok {
+    color: var(--cor-sucesso);
+}
+
+/* Consumo/dia é detalhe de suporte */
+.consumo-dia {
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+}
+
+/* Contador de alerta nos cards de filtro */
+.count-alerta {
+    color: var(--cor-cuidado);
+    font-weight: 600;
 }

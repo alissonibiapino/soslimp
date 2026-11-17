@@ -14,8 +14,6 @@ function atualizarRelogio() {
     document.getElementById('menu-hora').textContent = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
-
-
 // Funcionamanto da edição
 async function carregarCategorias() {
     const nav = document.getElementById('categorias-nav');
@@ -34,9 +32,6 @@ async function carregarCategorias() {
             button.className = 'categoria-card';
             button.dataset.category = cat.cod_categoria;
             button.innerHTML = `
-                <div class="categoria-card__icone">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-                </div>
                 <span class="categoria-card__label">${cat.categoria_produto}</span>
                 <span class="categoria-card__count">${cat.total_produtos} itens</span>
             `;
@@ -142,16 +137,33 @@ async function carregarProdutosTabela(categoriaId = null) {
     const tabelaBody = document.getElementById('tabela-produtos-body');
     if (!tabelaBody) return;
 
+    const cod_loja = localStorage.getItem('loja_id');
+
     try {
         let url = `${BASE_URL}/produtos/`;
         if (categoriaId) url = `${BASE_URL}/produtos/categoria/${categoriaId}`;
 
-        const response = await fetch(url);
-        const produtos = await response.json();
+        const [respProdutos, respEstoque] = await Promise.all([
+            fetch(url),
+            fetch(`${BASE_URL}/estoque/${cod_loja}`)
+        ]);
+
+        const produtos = await respProdutos.json();
+        const estoqueLista = await respEstoque.json();
+
+        // const response = await fetch(url);
+        // const produtos = await response.json();
+
+        const estoqueMap = new Map(estoqueLista.map(e => [e.cod_produto, e]));
         
         tabelaBody.innerHTML = '';
 
         produtos.forEach(prod => {
+            const info = estoqueMap.get(prod.cod_produto);
+            const qtd = info ? info.quantidade_atual : 0;
+            const minimo = info ? info.estoque_minimo : 0;
+            const baixo = qtd <= minimo;
+
             const tr = document.createElement('tr');
             const statusClass = prod.ativo ? 'tag--sucesso' : 'tag--cuidado';
             const statusText = prod.ativo ? 'Ativo' : 'Inativo';
@@ -171,7 +183,10 @@ async function carregarProdutosTabela(categoriaId = null) {
                 <td><span class="tag">${prod.categoria_produto || 'Geral'}</span></td>
                 <td>${prod.preco_unitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                 <td><span class="tag ${statusClass}">${statusText}</span></td>
-                <td style="text-align: right;">
+                <td>
+                    <span class="estoque-valor ${classeEstoque(qtd, minimo)}">${qtd}</span>
+                </td>
+                <td style="text-align: center;">
                     <button class="btn-icon" onclick="prepararEdicao(${prod.cod_produto})" title="Editar">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
@@ -182,6 +197,12 @@ async function carregarProdutosTabela(categoriaId = null) {
     } catch (error) {
         console.error("Erro ao carregar produtos:", error);
     }
+}
+
+function classeEstoque(qtd, minimo) {
+    if (qtd <= minimo) return 'estoque-baixo';
+    if (qtd <= minimo * 1.5) return 'estoque-atencao';
+    return 'estoque-ok';
 }
 
 async function salvarProduto(event) {
@@ -231,7 +252,27 @@ async function salvarProduto(event) {
         });
 
         if (response.ok) {
-            alert(cod_produto ? "Produto atualizado!" : "Produto cadastrado!");
+            let mensagem = cod_produto ? "Produto atualizado!" : "Produto cadastrado!";
+            let aviso = false;
+
+            if (cod_produto) {
+                const estoqueData = new FormData();
+                estoqueData.append('cod_produto', cod_produto);
+                estoqueData.append('cod_loja', localStorage.getItem('loja_id'));
+                estoqueData.append('estoque_minimo', Math.max(0, parseInt(document.getElementById('estoque_minimo').value) || 0));
+
+                const respEstoque = await fetch(`${BASE_URL}/estoque/minimo`, {
+                    method: 'POST',
+                    body: estoqueData
+                });
+
+                if (!respEstoque.ok) {
+                    mensagem = "Produto atualizado, mas o estoque mínimo não foi salvo.";
+                    aviso = true;
+                }
+            }
+
+            mostrarToast(mensagem, aviso ? 'aviso' : 'sucesso');
             limparFormulario();
             carregarProdutosTabela();
             carregarCategorias();
@@ -249,6 +290,8 @@ function limparFormulario() {
     document.getElementById('imagem_produto').value = '';
     document.getElementById('preview-imagem').src = `${BASE_URL}/static/products/padrao.png`;
     document.getElementById('titulo-formulario').textContent = 'Novo produto';
+    document.getElementById('grupo-estoque-minimo').style.display = 'none';
+    document.getElementById('estoque_minimo').value = '';
     document.querySelectorAll('.fragrancia-option').forEach(el => el.classList.remove('selected'));
 }
 
@@ -280,6 +323,15 @@ async function prepararEdicao(id) {
             document.getElementById('preview-imagem').src = `${BASE_URL}${prod.url_imagem}`;
             document.getElementById('url_imagem_atual').value = prod.url_imagem;
         }
+
+        const respEstoque = await fetch(`${BASE_URL}/estoque/${localStorage.getItem('loja_id')}`);
+        const estoque = await respEstoque.json();
+        const itemEstoque = Array.isArray(estoque)
+            ? estoque.find(e => e.cod_produto === prod.cod_produto)
+            : null;
+
+        document.getElementById('estoque_minimo').value = itemEstoque ? itemEstoque.estoque_minimo : 0;
+        document.getElementById('grupo-estoque-minimo').style.display = 'flex';
 
         document.querySelectorAll('.fragrancia-option').forEach(el => {
             const fragId = parseInt(el.dataset.id);
@@ -326,3 +378,40 @@ document.addEventListener('DOMContentLoaded', () => {
         btnTodas.addEventListener('click', () => selecionarCategoria(btnTodas, 'todas'));
     }
 });
+
+async function ajustarEstoque(cod_produto, nome_produto) {
+    const cod_loja = localStorage.getItem('loja_id');
+    const valor = prompt(`Ajustar estoque de "${nome_produto}"\nDigite a quantidade (use negativo para saída, ex: -5):`, "0");
+
+    if (valor === null || valor.trim() === "" || isNaN(valor)) return;
+
+    const motivo = prompt("Motivo do ajuste:", "Ajuste manual") || "Ajuste manual";
+
+    try {
+        const formData = new FormData();
+        formData.append("cod_produto", cod_produto);
+        formData.append("cod_loja", parseInt(cod_loja));
+        formData.append("quantidade", parseInt(valor));
+        formData.append("motivo", motivo);
+
+        const response = await fetch(`${BASE_URL}/estoque/ajustar`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (response.ok) {
+            mostrarToast("Estoque ajustado com sucesso!");
+            carregarProdutosTabela();
+        } else {
+            const erro = await response.json();
+            alert(`Erro: ${erro.detail}`);
+        }
+    } catch (error) {
+        console.error("Erro ao ajustar estoque:", error);
+    }
+}
+
+
+//                     // <button class="btn-icon" onclick="ajustarEstoque(${prod.cod_produto}, '${prod.nome_produto}')" title="Ajustar estoque">
+                    //     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                    // </button>

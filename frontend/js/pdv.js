@@ -41,13 +41,8 @@ async function carregarCategorias() {
             button.dataset.category = cat.cod_categoria;
 
             button.innerHTML = `
-                <div class="categoria-card__icone">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                </div>
                 <span class="categoria-card__label">${cat.categoria_produto}</span>
-                <span class="categoria-card__count">${cat.total_produtos.toString().padStart(2, '0')} itens</span>
+                <span class="categoria-card__count">${cat.total_produtos} itens</span>
             `;
 
             button.addEventListener('click', () => {
@@ -470,7 +465,7 @@ document.getElementById('btn-registrar-venda').addEventListener('click', async (
             })
         });
         if (response.ok) {
-            alert('Venda efetuada com sucesso!');
+            mostrarToast('Venda efetuada com sucesso!');
             
             // Limpar PDV após a venda
             carrinho = [];
@@ -481,9 +476,15 @@ document.getElementById('btn-registrar-venda').addEventListener('click', async (
             
             // Atualizar o valor do caixa no menu superior
             verificarStatusCaixa();
+        } else {
+            const detalhe = await response.json().catch(() => null);
+            mostrarToast(
+                typeof detalhe?.detail === 'string' ? detalhe.detail : 'Não foi possível finalizar a venda.',
+                'erro'
+            );
         }
     } catch (error) {
-        alert('Venda não efetuada')
+        mostrarToast('Não foi possível finalizar a venda.', 'erro');
         console.error("Erro ao efetuar pedido:", error)
     }
 })
